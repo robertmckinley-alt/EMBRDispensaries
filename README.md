@@ -19,6 +19,13 @@ A Next.js dashboard MVP for multi-dispensary Dutchie POS analytics. It ships wit
 
 ## Local Setup
 
+If PowerShell feels annoying, use the double-click helpers:
+
+- `Start Dashboard.bat` starts the local dashboard at `http://localhost:3100`
+- `Test Dutchie Keys.bat` verifies the six Dutchie API keys without printing them
+
+Manual setup:
+
 1. Install dependencies:
 
    ```powershell
