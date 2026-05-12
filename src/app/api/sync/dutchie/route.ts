@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDutchieStoreConfigs, syncDutchieStore } from "@/lib/dutchie";
+import { saveDutchieSyncSnapshot } from "@/lib/dutchie-sync-snapshot";
 
 export const runtime = "nodejs";
 
@@ -46,13 +47,17 @@ export async function POST(request: Request) {
 
   const window = getSyncWindow();
   const results = await Promise.all(stores.map((store) => syncDutchieStore(store, window)));
-
-  return NextResponse.json({
+  const snapshot = {
     ok: results.every((result) => result.verified && result.errors.length === 0),
+    syncedAt: new Date().toISOString(),
     window: {
       from: window.from.toISOString(),
       to: window.to.toISOString()
     },
     results
-  });
+  };
+
+  await saveDutchieSyncSnapshot(snapshot);
+
+  return NextResponse.json(snapshot);
 }

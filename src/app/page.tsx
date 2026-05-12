@@ -19,6 +19,7 @@ import {
   Users
 } from "lucide-react";
 import { ReportActions } from "@/components/report-actions";
+import { readDutchieSyncSnapshot, type DutchieSyncSnapshot } from "@/lib/dutchie-sync-snapshot";
 import {
   getDashboardData,
   getPeriod,
@@ -29,6 +30,8 @@ import {
   type Period,
   type StoreSnapshot
 } from "@/lib/mock-dutchie";
+
+export const dynamic = "force-dynamic";
 
 type PageProps = {
   searchParams?: Promise<{
@@ -429,7 +432,19 @@ function AlertFeed({ data }: { data: DashboardData["alerts"] }) {
   );
 }
 
-function SyncPanel({ lastSync }: { lastSync: string }) {
+function formatSyncTime(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(new Date(value));
+}
+
+function SyncPanel({ lastSync, snapshot }: { lastSync: string; snapshot: DutchieSyncSnapshot | null }) {
+  const verifiedCount = snapshot?.results.filter((result) => result.verified).length ?? 0;
+  const totalCount = snapshot?.results.length ?? 0;
+
   return (
     <section className="syncPanel">
       <div className="syncTop">
@@ -438,7 +453,7 @@ function SyncPanel({ lastSync }: { lastSync: string }) {
         </span>
         <div>
           <strong>Dutchie sync</strong>
-          <p>Last mock refresh: {lastSync}</p>
+          <p>{snapshot ? `Live pull: ${formatSyncTime(snapshot.syncedAt)}` : `Mock refresh: ${lastSync}`}</p>
         </div>
       </div>
       <div className="syncGrid">
@@ -448,9 +463,100 @@ function SyncPanel({ lastSync }: { lastSync: string }) {
         </span>
         <span>
           <RefreshCw size={15} />
-          Cron ready
+          {snapshot ? `${verifiedCount}/${totalCount} verified` : "Cron ready"}
         </span>
       </div>
+    </section>
+  );
+}
+
+function LiveDutchiePanel({ snapshot }: { snapshot: DutchieSyncSnapshot | null }) {
+  if (!snapshot) {
+    return (
+      <section className="panel liveDutchiePanel">
+        <div className="panelHeader">
+          <div>
+            <p className="eyebrow">Live Dutchie</p>
+            <h2>No local sync snapshot yet</h2>
+          </div>
+          <span className="softBadge">Run Sync Dutchie Data.bat</span>
+        </div>
+        <p className="panelNote">
+          Your keys can be valid but the dashboard still needs a sync run. Double-click
+          <strong> Sync Dutchie Data.bat</strong>, then refresh this page.
+        </p>
+      </section>
+    );
+  }
+
+  const totals = snapshot.results.reduce(
+    (sum, result) => ({
+      transactions: sum.transactions + (result.registerTransactionsFetched ?? 0),
+      products: sum.products + (result.productsFetched ?? 0),
+      inventory: sum.inventory + (result.inventoryFetched ?? 0),
+      verified: sum.verified + (result.verified ? 1 : 0)
+    }),
+    { transactions: 0, products: 0, inventory: 0, verified: 0 }
+  );
+
+  return (
+    <section className="panel liveDutchiePanel">
+      <div className="panelHeader">
+        <div>
+          <p className="eyebrow">Live Dutchie</p>
+          <h2>Latest API pull</h2>
+        </div>
+        <span className={`softBadge ${snapshot.ok ? "syncOk" : "syncWarn"}`}>
+          {totals.verified}/{snapshot.results.length} stores verified
+        </span>
+      </div>
+      <div className="liveSummary">
+        <div>
+          <span>Transactions pulled</span>
+          <strong>{totals.transactions.toLocaleString()}</strong>
+        </div>
+        <div>
+          <span>Products pulled</span>
+          <strong>{totals.products.toLocaleString()}</strong>
+        </div>
+        <div>
+          <span>Inventory rows</span>
+          <strong>{totals.inventory.toLocaleString()}</strong>
+        </div>
+        <div>
+          <span>Last sync</span>
+          <strong>{formatSyncTime(snapshot.syncedAt)}</strong>
+        </div>
+      </div>
+      <div className="liveStoreList">
+        {snapshot.results.map((result) => (
+          <article key={result.storeId} className="liveStoreRow">
+            <div>
+              <span className={`statusDot ${result.verified ? "good" : "risk"}`} />
+              <strong>{result.storeName}</strong>
+              <small>{result.errors.length ? result.errors.join("; ") : "Connected"}</small>
+            </div>
+            <dl>
+              <div>
+                <dt>Tx</dt>
+                <dd>{result.registerTransactionsFetched?.toLocaleString() ?? "n/a"}</dd>
+              </div>
+              <div>
+                <dt>Products</dt>
+                <dd>{result.productsFetched?.toLocaleString() ?? "n/a"}</dd>
+              </div>
+              <div>
+                <dt>Inventory</dt>
+                <dd>{result.inventoryFetched?.toLocaleString() ?? "n/a"}</dd>
+              </div>
+            </dl>
+          </article>
+        ))}
+      </div>
+      <p className="panelNote">
+        These are live Dutchie pull counts. Revenue, net sales, average ticket, and budtender metrics still need the
+        database aggregation layer before they replace the mock reporting cards.
+      </p>
     </section>
   );
 }
@@ -472,6 +578,7 @@ export default async function Home({ searchParams }: PageProps) {
   const params = await searchParams;
   const period = getPeriod(params?.period);
   const data = getDashboardData(period);
+  const snapshot = await readDutchieSyncSnapshot();
 
   return (
     <main className="appShell">
@@ -505,7 +612,7 @@ export default async function Home({ searchParams }: PageProps) {
           </a>
         </nav>
 
-        <SyncPanel lastSync={data.lastSync} />
+        <SyncPanel lastSync={data.lastSync} snapshot={snapshot} />
       </aside>
 
       <section className="workspace">
@@ -533,6 +640,8 @@ export default async function Home({ searchParams }: PageProps) {
             <KpiCard key={kpi.label} kpi={kpi} index={index} />
           ))}
         </section>
+
+        <LiveDutchiePanel snapshot={snapshot} />
 
         <StoreSnapshotGrid stores={data.stores} />
 

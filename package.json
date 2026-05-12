@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test:dutchie": "node --env-file=.env.local scripts/test-dutchie.mjs"
+    "test:dutchie": "node --env-file=.env.local scripts/test-dutchie.mjs",
+    "sync:dutchie": "node --env-file=.env.local scripts/sync-dutchie.mjs"
   },
   "dependencies": {
     "lucide-react": "latest",

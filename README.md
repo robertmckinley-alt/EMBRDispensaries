@@ -23,6 +23,7 @@ If PowerShell feels annoying, use the double-click helpers:
 
 - `Start Dashboard.bat` starts the local dashboard at `http://localhost:3100`
 - `Test Dutchie Keys.bat` verifies the six Dutchie API keys without printing them
+- `Sync Dutchie Data.bat` pulls Dutchie counts into a local dashboard snapshot
 
 Manual setup:
 
@@ -76,15 +77,21 @@ The included `vercel.json` schedules weekly emails on Mondays at 15:00 UTC and m
 
 ## Dutchie Sync
 
-The sync route is intentionally server-only. Call it with:
+The sync route is intentionally server-only. The easiest local path is:
+
+1. Double-click `Start Dashboard.bat`
+2. Double-click `Sync Dutchie Data.bat`
+3. Refresh `http://localhost:3100`
+
+Manual sync:
 
 ```powershell
 Invoke-RestMethod -Method POST `
-  -Uri http://localhost:3000/api/sync/dutchie `
+  -Uri http://localhost:3100/api/sync/dutchie `
   -Headers @{ Authorization = "Bearer YOUR_CRON_SECRET" }
 ```
 
-For production, wire the same endpoint to Vercel Cron or a scheduled worker. The current route verifies each configured store and fetches products, inventory reporting, and register transactions for a date window. The next step is to persist those results into Postgres tables instead of returning counts.
+For production, wire the same endpoint to Vercel Cron or a scheduled worker. The current route verifies each configured store, fetches products, inventory reporting, and register transactions for a date window, then saves a local sync summary in `data/`. The next step is to persist full reporting rows into Postgres tables and calculate the weekly/monthly dashboard cards from that data.
 
 ## Suggested Database Tables
 
