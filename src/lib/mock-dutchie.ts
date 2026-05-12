@@ -416,6 +416,25 @@ function scaleSeries(series: number[], multiplier: number) {
   return series.map((value) => Math.round(value * multiplier));
 }
 
+function scaleStoreKpiValue(kpi: Kpi, store: StoreSnapshot, period: Period, multiplier: number) {
+  if (kpi.label === "Net sales") {
+    return period === "monthly" ? store.monthToDateNet : store.priorWeekNet;
+  }
+
+  if (kpi.label === "Transactions") {
+    const weeklyTransactions = Number(store.priorWeekTransactions.replace(/,/g, ""));
+    return period === "monthly"
+      ? Math.round(weeklyTransactions * 4.1).toLocaleString("en-US")
+      : store.priorWeekTransactions;
+  }
+
+  if (kpi.label === "Average ticket") {
+    return store.averageBasket;
+  }
+
+  return kpi.value.includes("$") ? scaleMoneyLabel(kpi.value, multiplier / 5.2) : kpi.value;
+}
+
 function makeStoreBudtenders(store: StoreSnapshot, period: Period) {
   const source = period === "monthly" ? monthlyBudtenders : weeklyBudtenders;
   const storeName = store.name;
@@ -470,7 +489,7 @@ export function getStoreReport(storeId: string, period: Period): StoreReport | n
     comparisons: [store.comparison.netSales, store.comparison.transactions, store.comparison.averageTicket],
     kpis: portfolio.kpis.map((kpi) => ({
       ...kpi,
-      value: kpi.value.includes("$") ? scaleMoneyLabel(kpi.value, multiplier / 5.2) : kpi.value,
+      value: scaleStoreKpiValue(kpi, store, period, multiplier),
       series: scaleSeries(kpi.series, multiplier)
     })),
     revenueSeries: portfolio.revenueSeries.map((point) => ({

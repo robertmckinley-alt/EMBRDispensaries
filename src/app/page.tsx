@@ -118,7 +118,7 @@ function ComparisonPanel({ title, comparisons }: { title: string; comparisons: C
             </div>
             <span className={`changePill ${comparison.direction === "down" ? "risk" : "good"}`}>
               {comparison.direction === "down" ? <ArrowDownRight size={14} /> : <ArrowUpRight size={14} />}
-              {comparison.delta} · {comparison.percent}
+              {comparison.delta} / {comparison.percent}
             </span>
             <p>{comparison.detail}</p>
           </article>
@@ -196,7 +196,7 @@ function StoreCard({ store }: { store: StoreSnapshot }) {
         </span>
         <div>
           <h3>{store.name}</h3>
-          <p>{store.city} · {store.market}</p>
+          <p>{store.city} / {store.market}</p>
         </div>
         <span className={`tableStatus ${store.status.toLowerCase()}`}>{store.status}</span>
       </div>
@@ -235,9 +235,16 @@ function StoreCard({ store }: { store: StoreSnapshot }) {
           {store.change}
         </span>
         <div>
+          <Link href={`/stores/${store.id}?period=weekly`}>Open detail</Link>
           <Link href={`/stores/${store.id}?period=weekly`}>Past week</Link>
           <Link href={`/stores/${store.id}?period=monthly`}>Current month</Link>
         </div>
+      </div>
+      <div className="storeDeepLinks">
+        <Link href={`/stores/${store.id}?period=weekly#skus`}>SKUs</Link>
+        <Link href={`/stores/${store.id}?period=weekly#reorder`}>Reorder</Link>
+        <Link href={`/stores/${store.id}?period=weekly#transactions`}>Transactions</Link>
+        <Link href={`/stores/${store.id}?period=weekly#marketing`}>Marketing</Link>
       </div>
     </article>
   );
@@ -398,7 +405,7 @@ function ProductVelocity({ data }: { data: DashboardData["products"] }) {
             <div className="productMeta">
               <strong>{product.units.toLocaleString()} units</strong>
               <span>
-                {product.revenue} · {product.trend}
+                {product.revenue} / {product.trend}
               </span>
             </div>
           </div>

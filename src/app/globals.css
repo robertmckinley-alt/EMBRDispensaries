@@ -414,6 +414,30 @@ h1 {
   color: var(--text);
 }
 
+.storeDeepLinks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.storeDeepLinks a {
+  display: grid;
+  min-height: 1.8rem;
+  place-items: center;
+  border: 1px solid rgba(92, 199, 215, 0.18);
+  border-radius: 8px;
+  background: rgba(92, 199, 215, 0.07);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.storeDeepLinks a:hover {
+  border-color: rgba(92, 199, 215, 0.42);
+  color: var(--text);
+}
+
 .metricCard,
 .panel {
   border: 1px solid var(--line);
@@ -857,6 +881,36 @@ h1 {
   padding: 1.35rem;
 }
 
+.storeSectionNav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
+  padding: 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(17, 19, 17, 0.9);
+  backdrop-filter: blur(16px);
+}
+
+.storeSectionNav a {
+  display: grid;
+  min-height: 2rem;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.storeSectionNav a:hover {
+  background: rgba(244, 241, 232, 0.07);
+  color: var(--text);
+}
+
 .backLink {
   display: inline-flex;
   align-items: center;
@@ -892,6 +946,197 @@ h1 {
 .storeHero p {
   margin: 0;
   color: var(--muted);
+}
+
+.storeHeroActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.storeHeroActions a {
+  display: grid;
+  min-height: 1.85rem;
+  place-items: center;
+  padding: 0 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.storeHeroActions a:hover {
+  border-color: rgba(86, 214, 138, 0.36);
+  color: var(--text);
+}
+
+.storeInsightGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.insightCardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.insightCard {
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.insightCardTop {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: start;
+}
+
+.insightCardTop strong {
+  display: block;
+}
+
+.insightCardTop p {
+  margin: 0.18rem 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.insightStats,
+.marketingCard dl,
+.segmentCard dl {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0;
+}
+
+.insightStats {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 0.85rem;
+}
+
+.insightStats div,
+.marketingCard dl div,
+.segmentCard dl div {
+  min-width: 0;
+}
+
+.insightStats dt,
+.marketingCard dt,
+.segmentCard dt {
+  color: var(--subtle);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.insightStats dd,
+.marketingCard dd,
+.segmentCard dd {
+  margin: 0.15rem 0 0;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.barCompareList {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.barCompareRow {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.35rem 0.75rem;
+  align-items: center;
+}
+
+.barCompareRow strong {
+  grid-row: span 2;
+  color: var(--text);
+}
+
+.barCompareRow div {
+  position: relative;
+  min-height: 1.15rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(244, 241, 232, 0.08);
+}
+
+.barCompareRow div:nth-child(2) span {
+  background: var(--green);
+}
+
+.barCompareRow div:nth-child(3) span {
+  background: rgba(92, 199, 215, 0.6);
+}
+
+.barCompareRow div span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.barCompareRow small {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 0.6rem;
+  color: var(--text);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.segmentList,
+.marketingGrid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.segmentCard,
+.marketingCard {
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.segmentCard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.8fr);
+  gap: 0.85rem;
+}
+
+.segmentCard p {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.segmentCard dl {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.marketingGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.marketingCard strong {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 1rem;
 }
 
 .printOnly {
