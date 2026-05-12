@@ -59,14 +59,14 @@ Copy-Item .env.example .env.local
 In `.env.local`, keep `DUTCHIE_STORES` as JSON and put each real key in its own env var:
 
 ```env
-DUTCHIE_STORES=[{"id":"downtown","name":"EMBR Downtown","apiKeyEnv":"DUTCHIE_API_KEY_DOWNTOWN"},{"id":"north","name":"EMBR North","apiKeyEnv":"DUTCHIE_API_KEY_NORTH"},{"id":"eastside","name":"EMBR Eastside","apiKeyEnv":"DUTCHIE_API_KEY_EASTSIDE"},{"id":"airport","name":"EMBR Airport","apiKeyEnv":"DUTCHIE_API_KEY_AIRPORT"},{"id":"west-medical","name":"EMBR West Medical","apiKeyEnv":"DUTCHIE_API_KEY_WEST_MEDICAL"},{"id":"south","name":"EMBR South","apiKeyEnv":"DUTCHIE_API_KEY_SOUTH"}]
+DUTCHIE_STORES=[{"id":"springfield","name":"EMBR Springfield","apiKeyEnv":"DUTCHIE_API_KEY_SPRINGFIELD"},{"id":"northampton","name":"EMBR Northampton","apiKeyEnv":"DUTCHIE_API_KEY_NORTHAMPTON"},{"id":"fyre-ants","name":"FYRE ANTS","apiKeyEnv":"DUTCHIE_API_KEY_FYRE_ANTS"},{"id":"la-mesa","name":"EMBR La Mesa","apiKeyEnv":"DUTCHIE_API_KEY_LA_MESA"},{"id":"lake-elsinore","name":"EMBR Lake Elsinore","apiKeyEnv":"DUTCHIE_API_KEY_LAKE_ELSINORE"},{"id":"hlc-greenfield","name":"HLC Greenfield","apiKeyEnv":"DUTCHIE_API_KEY_HLC_GREENFIELD"}]
 
-DUTCHIE_API_KEY_DOWNTOWN=your_key_here
-DUTCHIE_API_KEY_NORTH=your_key_here
-DUTCHIE_API_KEY_EASTSIDE=your_key_here
-DUTCHIE_API_KEY_AIRPORT=your_key_here
-DUTCHIE_API_KEY_WEST_MEDICAL=your_key_here
-DUTCHIE_API_KEY_SOUTH=your_key_here
+DUTCHIE_API_KEY_SPRINGFIELD=your_key_here
+DUTCHIE_API_KEY_NORTHAMPTON=your_key_here
+DUTCHIE_API_KEY_FYRE_ANTS=your_key_here
+DUTCHIE_API_KEY_LA_MESA=your_key_here
+DUTCHIE_API_KEY_LAKE_ELSINORE=your_key_here
+DUTCHIE_API_KEY_HLC_GREENFIELD=your_key_here
 ```
 
 ### 3. Test the keys

@@ -129,9 +129,9 @@ export type StoreReport = {
 
 export const stores: StoreSnapshot[] = [
   {
-    id: "downtown",
-    name: "EMBR Downtown",
-    city: "Downtown",
+    id: "springfield",
+    name: "EMBR Springfield",
+    city: "Springfield",
     market: "Adult-use",
     priorWeekRevenue: "$112.4K",
     priorWeekGross: "$121.8K",
@@ -149,9 +149,9 @@ export const stores: StoreSnapshot[] = [
     }
   },
   {
-    id: "north",
-    name: "EMBR North",
-    city: "North",
+    id: "northampton",
+    name: "EMBR Northampton",
+    city: "Northampton",
     market: "Mixed",
     priorWeekRevenue: "$94.7K",
     priorWeekGross: "$103.1K",
@@ -169,9 +169,9 @@ export const stores: StoreSnapshot[] = [
     }
   },
   {
-    id: "eastside",
-    name: "EMBR Eastside",
-    city: "Eastside",
+    id: "fyre-ants",
+    name: "FYRE ANTS",
+    city: "FYRE ANTS",
     market: "Adult-use",
     priorWeekRevenue: "$84.1K",
     priorWeekGross: "$91.5K",
@@ -189,10 +189,10 @@ export const stores: StoreSnapshot[] = [
     }
   },
   {
-    id: "airport",
-    name: "EMBR Airport",
-    city: "Airport",
-    market: "Tourist",
+    id: "la-mesa",
+    name: "EMBR La Mesa",
+    city: "La Mesa",
+    market: "Adult-use",
     priorWeekRevenue: "$76.8K",
     priorWeekGross: "$84.6K",
     priorWeekNet: "$76.8K",
@@ -209,10 +209,10 @@ export const stores: StoreSnapshot[] = [
     }
   },
   {
-    id: "west-medical",
-    name: "EMBR West Medical",
-    city: "West Medical",
-    market: "Medical",
+    id: "lake-elsinore",
+    name: "EMBR Lake Elsinore",
+    city: "Lake Elsinore",
+    market: "Adult-use",
     priorWeekRevenue: "$60.6K",
     priorWeekGross: "$66.2K",
     priorWeekNet: "$60.6K",
@@ -229,9 +229,9 @@ export const stores: StoreSnapshot[] = [
     }
   },
   {
-    id: "south",
-    name: "EMBR South",
-    city: "South",
+    id: "hlc-greenfield",
+    name: "HLC Greenfield",
+    city: "Greenfield",
     market: "Adult-use",
     priorWeekRevenue: "$71.2K",
     priorWeekGross: "$77.9K",
@@ -251,21 +251,21 @@ export const stores: StoreSnapshot[] = [
 ];
 
 const weeklyBudtenders: BudtenderMetric[] = [
-  { name: "Maya R.", store: "EMBR Downtown", transactions: 248, grossSales: "$18.9K", netSales: "$17.6K", discounts: "$1.3K", averageBasket: "$70.96", units: 721 },
-  { name: "Chris T.", store: "EMBR Airport", transactions: 226, grossSales: "$16.8K", netSales: "$15.9K", discounts: "$0.9K", averageBasket: "$70.35", units: 664 },
-  { name: "Jordan P.", store: "EMBR North", transactions: 219, grossSales: "$15.7K", netSales: "$14.8K", discounts: "$0.9K", averageBasket: "$67.58", units: 619 },
-  { name: "Sam K.", store: "EMBR South", transactions: 107, grossSales: "$6.3K", netSales: "$5.7K", discounts: "$0.6K", averageBasket: "$53.27", units: 284 },
-  { name: "Taylor N.", store: "EMBR West Medical", transactions: 98, grossSales: "$5.8K", netSales: "$5.1K", discounts: "$0.7K", averageBasket: "$52.04", units: 251 },
-  { name: "Avery L.", store: "EMBR Eastside", transactions: 91, grossSales: "$5.2K", netSales: "$4.7K", discounts: "$0.5K", averageBasket: "$51.65", units: 229 }
+  { name: "Maya R.", store: "EMBR Springfield", transactions: 248, grossSales: "$18.9K", netSales: "$17.6K", discounts: "$1.3K", averageBasket: "$70.96", units: 721 },
+  { name: "Chris T.", store: "EMBR La Mesa", transactions: 226, grossSales: "$16.8K", netSales: "$15.9K", discounts: "$0.9K", averageBasket: "$70.35", units: 664 },
+  { name: "Jordan P.", store: "EMBR Northampton", transactions: 219, grossSales: "$15.7K", netSales: "$14.8K", discounts: "$0.9K", averageBasket: "$67.58", units: 619 },
+  { name: "Sam K.", store: "HLC Greenfield", transactions: 107, grossSales: "$6.3K", netSales: "$5.7K", discounts: "$0.6K", averageBasket: "$53.27", units: 284 },
+  { name: "Taylor N.", store: "EMBR Lake Elsinore", transactions: 98, grossSales: "$5.8K", netSales: "$5.1K", discounts: "$0.7K", averageBasket: "$52.04", units: 251 },
+  { name: "Avery L.", store: "FYRE ANTS", transactions: 91, grossSales: "$5.2K", netSales: "$4.7K", discounts: "$0.5K", averageBasket: "$51.65", units: 229 }
 ];
 
 const monthlyBudtenders: BudtenderMetric[] = [
-  { name: "Maya R.", store: "EMBR Downtown", transactions: 934, grossSales: "$72.4K", netSales: "$67.8K", discounts: "$4.6K", averageBasket: "$72.59", units: 2761 },
-  { name: "Chris T.", store: "EMBR Airport", transactions: 891, grossSales: "$65.1K", netSales: "$61.0K", discounts: "$4.1K", averageBasket: "$68.46", units: 2527 },
-  { name: "Jordan P.", store: "EMBR North", transactions: 846, grossSales: "$61.8K", netSales: "$57.9K", discounts: "$3.9K", averageBasket: "$68.44", units: 2408 },
-  { name: "Sam K.", store: "EMBR South", transactions: 406, grossSales: "$24.3K", netSales: "$22.0K", discounts: "$2.3K", averageBasket: "$54.19", units: 1102 },
-  { name: "Taylor N.", store: "EMBR West Medical", transactions: 378, grossSales: "$21.9K", netSales: "$19.4K", discounts: "$2.5K", averageBasket: "$51.32", units: 978 },
-  { name: "Avery L.", store: "EMBR Eastside", transactions: 351, grossSales: "$19.8K", netSales: "$17.8K", discounts: "$2.0K", averageBasket: "$50.71", units: 905 }
+  { name: "Maya R.", store: "EMBR Springfield", transactions: 934, grossSales: "$72.4K", netSales: "$67.8K", discounts: "$4.6K", averageBasket: "$72.59", units: 2761 },
+  { name: "Chris T.", store: "EMBR La Mesa", transactions: 891, grossSales: "$65.1K", netSales: "$61.0K", discounts: "$4.1K", averageBasket: "$68.46", units: 2527 },
+  { name: "Jordan P.", store: "EMBR Northampton", transactions: 846, grossSales: "$61.8K", netSales: "$57.9K", discounts: "$3.9K", averageBasket: "$68.44", units: 2408 },
+  { name: "Sam K.", store: "HLC Greenfield", transactions: 406, grossSales: "$24.3K", netSales: "$22.0K", discounts: "$2.3K", averageBasket: "$54.19", units: 1102 },
+  { name: "Taylor N.", store: "EMBR Lake Elsinore", transactions: 378, grossSales: "$21.9K", netSales: "$19.4K", discounts: "$2.5K", averageBasket: "$51.32", units: 978 },
+  { name: "Avery L.", store: "FYRE ANTS", transactions: 351, grossSales: "$19.8K", netSales: "$17.8K", discounts: "$2.0K", averageBasket: "$50.71", units: 905 }
 ];
 
 const weekly: DashboardData = {
@@ -320,8 +320,8 @@ const weekly: DashboardData = {
     bottom: weeklyBudtenders.slice(-3)
   },
   alerts: [
-    { title: "Airport is pacing above forecast", body: "Weekend traffic lifted net sales 14% over the previous four-week average.", tone: "good" },
-    { title: "West Medical needs replenishment", body: "Nine top-decile SKUs are below three days of supply.", tone: "risk" },
+    { title: "EMBR La Mesa is pacing above forecast", body: "Weekend traffic lifted net sales 14% over the previous four-week average.", tone: "good" },
+    { title: "EMBR Lake Elsinore needs replenishment", body: "Nine top-decile SKUs are below three days of supply.", tone: "risk" },
     { title: "Vape category margin watch", body: "Discounting is up 6.8 points versus last week.", tone: "warn" }
   ]
 };
@@ -376,18 +376,18 @@ const monthly: DashboardData = {
   },
   alerts: [
     { title: "Premium flower is gaining share", body: "Top-shelf 3.5g SKUs now account for 22% of flower revenue.", tone: "good" },
-    { title: "Medical average ticket erosion", body: "West Medical average ticket is down 4.1% from last month.", tone: "risk" },
+    { title: "Lake Elsinore average ticket erosion", body: "EMBR Lake Elsinore average ticket is down 4.1% from last month.", tone: "risk" },
     { title: "Pre-roll velocity has reordering risk", body: "Two high-velocity products will stock out before the next scheduled delivery.", tone: "warn" }
   ]
 };
 
 const storeMultipliers: Record<string, number> = {
-  downtown: 1.16,
-  north: 1.02,
-  eastside: 0.94,
-  airport: 0.88,
-  "west-medical": 0.72,
-  south: 0.82
+  springfield: 1.16,
+  northampton: 1.02,
+  "fyre-ants": 0.94,
+  "la-mesa": 0.88,
+  "lake-elsinore": 0.72,
+  "hlc-greenfield": 0.82
 };
 
 function formatMoney(value: number) {
