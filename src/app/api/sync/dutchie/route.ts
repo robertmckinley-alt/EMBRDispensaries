@@ -15,7 +15,7 @@ async function syncDutchie(request: Request) {
 
   if (!secret) {
     return NextResponse.json(
-      { error: "CRON_SECRET is not configured. Add it to .env.local before enabling sync." },
+      { error: "CRON_SECRET is not configured. Add it to .env.local or Vercel environment variables before enabling sync." },
       { status: 500 }
     );
   }
@@ -32,7 +32,7 @@ async function syncDutchie(request: Request) {
     return NextResponse.json(
       {
         ok: false,
-        error: "No Dutchie stores configured. Set DUTCHIE_STORES in .env.local.",
+        error: "No Dutchie stores configured. Set DUTCHIE_STORES in .env.local or Vercel environment variables.",
         results: []
       },
       { status: 400 }
