@@ -146,7 +146,11 @@ export async function buildDutchieSyncSnapshot(
   stores: DutchieStoreConfig[] = getDutchieStoreConfigs(),
   window: DutchieSyncWindow = getDutchieSyncWindow()
 ): Promise<DutchieSyncSnapshot> {
-  const results = await Promise.all(stores.map((store) => syncDutchieStore(store, window)));
+  const results: DutchieSyncResult[] = [];
+
+  for (const store of stores) {
+    results.push(await syncDutchieStore(store, window));
+  }
 
   return {
     ok: results.every((result) => result.verified && result.errors.length === 0),
