@@ -407,6 +407,28 @@ function textValue(value: string | null | undefined) {
   return text.length > 0 ? text : undefined;
 }
 
+function zonedDateKey(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
+function transactionLocalDateKey(transaction: DutchieTransaction, date: Date) {
+  const localDate = textValue(transaction.transactionDateLocalTime)?.slice(0, 10);
+
+  if (localDate && /^\d{4}-\d{2}-\d{2}$/.test(localDate)) {
+    return localDate;
+  }
+
+  return zonedDateKey(date, REPORT_TIME_ZONE);
+}
+
 function buildProductCatalog(payload: unknown) {
   const products = new Map<number, ProductCatalogEntry>();
   const rows = payloadArray(payload) ?? [];
@@ -529,6 +551,39 @@ function buildInventorySummaries(payload: unknown): DutchieInventorySummary[] {
   return Array.from(inventory.values()).sort((a, b) => b.retailValue - a.retailValue);
 }
 
+function buildInventoryCostCatalog(inventory: DutchieInventorySummary[]) {
+  const byProductId = new Map<number, { costValue: number; onHand: number }>();
+  const bySku = new Map<string, { costValue: number; onHand: number }>();
+
+  for (const item of inventory) {
+    if (item.unitCost <= 0 || item.onHand <= 0) {
+      continue;
+    }
+
+    const product = byProductId.get(item.productId) ?? { costValue: 0, onHand: 0 };
+    product.costValue += item.costValue;
+    product.onHand += item.onHand;
+    byProductId.set(item.productId, product);
+
+    const sku = bySku.get(item.sku) ?? { costValue: 0, onHand: 0 };
+    sku.costValue += item.costValue;
+    sku.onHand += item.onHand;
+    bySku.set(item.sku, sku);
+  }
+
+  return {
+    byProductId: new Map(
+      Array.from(byProductId.entries()).map(([productId, value]) => [
+        productId,
+        value.onHand > 0 ? value.costValue / value.onHand : 0
+      ])
+    ),
+    bySku: new Map(
+      Array.from(bySku.entries()).map(([sku, value]) => [sku, value.onHand > 0 ? value.costValue / value.onHand : 0])
+    )
+  };
+}
+
 function summarizeClosingReport(report: DutchieClosingReport, window: DutchieSyncWindow): DutchieFinancialPeriod {
   const grossSales = numberValue(report.grossSales);
   const netSales = numberValue(report.netSales ?? report.itemTotal);
@@ -608,7 +663,8 @@ function buildTransactionRollups(
   transactions: DutchieTransaction[],
   weeklyWindow: DutchieSyncWindow,
   monthlyWindow: DutchieSyncWindow,
-  productCatalog: Map<number, ProductCatalogEntry>
+  productCatalog: Map<number, ProductCatalogEntry>,
+  inventoryCostCatalog: ReturnType<typeof buildInventoryCostCatalog>
 ) {
   const daily = new Map<string, DutchieDailyPoint>();
   const weeklyBudtenders = new Map<string, DutchieBudtenderSummary>();
@@ -634,8 +690,10 @@ function buildTransactionRollups(
     const ticketCount = isReturn ? 0 : 1;
     const inWeeklyWindow = isInWindow(date, weeklyWindow);
     const inMonthlyWindow = isInWindow(date, monthlyWindow);
-    const dailyKey = date.toISOString().slice(0, 10);
-    const label = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: "UTC" }).format(date);
+    const dailyKey = transactionLocalDateKey(transaction, date);
+    const label = new Intl.DateTimeFormat("en-US", { weekday: "short", timeZone: REPORT_TIME_ZONE }).format(
+      new Date(`${dailyKey}T12:00:00.000Z`)
+    );
     const point = daily.get(dailyKey) ?? { date: dailyKey, label, netSales: 0, transactions: 0 };
     point.netSales += netSales;
     point.transactions += ticketCount;
@@ -676,6 +734,10 @@ function buildTransactionRollups(
       const sku = catalogProduct?.sku ?? textValue(item.sku);
       const brand = catalogProduct?.brand;
       const vendor = catalogProduct?.vendor ?? textValue(item.vendor);
+      const unitCost =
+        inventoryCostCatalog.byProductId.get(item.productId) ??
+        (sku ? inventoryCostCatalog.bySku.get(sku) : undefined) ??
+        catalogProduct?.unitCost;
       if (inMonthlyWindow) {
         const monthlyProduct = monthlyProducts.get(item.productId) ?? {
           productId: item.productId,
@@ -685,7 +747,7 @@ function buildTransactionRollups(
           brand,
           vendor,
           price: catalogProduct?.price,
-          unitCost: catalogProduct?.unitCost,
+          unitCost,
           units: 0,
           netSales: 0
         };
@@ -703,7 +765,7 @@ function buildTransactionRollups(
           brand,
           vendor,
           price: catalogProduct?.price,
-          unitCost: catalogProduct?.unitCost,
+          unitCost,
           units: 0,
           netSales: 0
         };
@@ -791,11 +853,13 @@ async function getDutchieStoreAnalytics(client: ReturnType<typeof createDutchieC
     client.allProducts(),
     client.inventoryReport(windows.transactionRollup)
   ]);
+  const inventorySummaries = buildInventorySummaries(inventory);
   const rollups = buildTransactionRollups(
     Array.isArray(transactions) ? transactions : [],
     windows.weekly,
     windows.monthly,
-    buildProductCatalog(products)
+    buildProductCatalog(products),
+    buildInventoryCostCatalog(inventorySummaries)
   );
 
   return {
@@ -808,7 +872,7 @@ async function getDutchieStoreAnalytics(client: ReturnType<typeof createDutchieC
       previous: summarizeClosingReport(monthlyPrevious, windows.previousMonthly)
     },
     ...rollups,
-    inventory: buildInventorySummaries(inventory)
+    inventory: inventorySummaries
   };
 }
 

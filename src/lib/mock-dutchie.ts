@@ -818,6 +818,46 @@ function formatLastSync(value: string) {
   }).format(date)}`;
 }
 
+function localDateKey(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(date);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value ?? "";
+
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
+function inventoryRiskCounts(inventory: DutchieInventorySummary[]) {
+  const lowStock = inventory.filter((item) => item.onHand <= 5).length;
+  const expiring = inventory.filter((item) => item.daysToExpire !== null && item.daysToExpire <= 30).length;
+  const lowRoi = inventory.filter((item) => item.estimatedRoi <= 15).length;
+  const atRisk = new Set(
+    inventory
+      .filter((item) => item.onHand <= 5 || (item.daysToExpire !== null && item.daysToExpire <= 30) || item.estimatedRoi <= 15)
+      .map((item) => `${item.inventoryId}-${item.sku}-${item.packageId}`)
+  );
+
+  return { lowStock, expiring, lowRoi, atRisk: atRisk.size, total: inventory.length };
+}
+
+function inventoryHealthLabel(inventory: DutchieInventorySummary[], fallback: string) {
+  if (inventory.length === 0) {
+    return fallback;
+  }
+
+  const risk = inventoryRiskCounts(inventory);
+  return `${Math.max(0, Math.round(100 - (risk.atRisk / Math.max(risk.total, 1)) * 100))}%`;
+}
+
 function makeLiveComparisonSet(current: DutchieFinancialPeriod, previous: DutchieFinancialPeriod): ComparisonMetric[] {
   const currentNetPerDay = current.netSales / Math.max((new Date(current.to).getTime() - new Date(current.from).getTime()) / 86_400_000, 1);
   const previousNetPerDay = previous.netSales / Math.max((new Date(previous.to).getTime() - new Date(previous.from).getTime()) / 86_400_000, 1);
@@ -889,10 +929,7 @@ function makeInventorySignalsFromInventory(inventory: DutchieInventorySummary[],
     return fallback;
   }
 
-  const rows = inventory.length;
-  const lowStock = inventory.filter((item) => item.onHand <= 5).length;
-  const expiring = inventory.filter((item) => item.daysToExpire !== null && item.daysToExpire <= 30).length;
-  const lowRoi = inventory.filter((item) => item.estimatedRoi <= 15).length;
+  const { total: rows, lowStock, expiring, lowRoi } = inventoryRiskCounts(inventory);
   const noSalesExposure = inventory.filter((item) => item.retailValue > 0 && item.onHand > 0).length;
   const pctOfRows = (count: number) => Math.min(100, Math.max(2, Math.round((count / rows) * 100)));
 
@@ -939,27 +976,20 @@ function makeLiveKpis(
 ): Kpi[] {
   const comparisons = makeLiveComparisonSet(current, previous);
   const inventory = results.flatMap((result) => result.analytics.inventory ?? []);
-  const lowStock = inventory.filter((item) => item.onHand <= 5).length;
-  const expiring = inventory.filter((item) => item.daysToExpire !== null && item.daysToExpire <= 30).length;
-  const lowRoi = inventory.filter((item) => item.estimatedRoi <= 15).length;
-  const atRisk = new Set(
-    inventory
-      .filter((item) => item.onHand <= 5 || (item.daysToExpire !== null && item.daysToExpire <= 30) || item.estimatedRoi <= 15)
-      .map((item) => `${item.inventoryId}-${item.sku}-${item.packageId}`)
-  );
+  const risk = inventoryRiskCounts(inventory);
   const inventoryKpi: Kpi =
     inventory.length > 0
       ? {
           label: "At-risk inventory",
-          value: `${atRisk.size.toLocaleString()} rows`,
-          change: `${expiring.toLocaleString()} expiring`,
-          direction: atRisk.size > 0 ? "down" : "flat",
-          detail: `Dutchie inventory rows flagged for low stock (${lowStock}), expiry (${expiring}), or low ROI (${lowRoi}).`,
+          value: `${risk.atRisk.toLocaleString()} rows`,
+          change: `${risk.expiring.toLocaleString()} expiring`,
+          direction: risk.atRisk > 0 ? "down" : "flat",
+          detail: `Dutchie inventory rows flagged for low stock (${risk.lowStock}), expiry (${risk.expiring}), or low ROI (${risk.lowRoi}).`,
           series: [
-            Math.max(8, Math.round((lowStock / Math.max(inventory.length, 1)) * 100)),
-            Math.max(8, Math.round((expiring / Math.max(inventory.length, 1)) * 100)),
-            Math.max(8, Math.round((lowRoi / Math.max(inventory.length, 1)) * 100)),
-            Math.min(94, Math.round((atRisk.size / Math.max(inventory.length, 1)) * 100))
+            Math.max(8, Math.round((risk.lowStock / Math.max(inventory.length, 1)) * 100)),
+            Math.max(8, Math.round((risk.expiring / Math.max(inventory.length, 1)) * 100)),
+            Math.max(8, Math.round((risk.lowRoi / Math.max(inventory.length, 1)) * 100)),
+            Math.min(94, Math.round((risk.atRisk / Math.max(inventory.length, 1)) * 100))
           ]
         }
       : (fallback.find((kpi) => !["Net sales", "Transactions", "Avg net ticket", "Average ticket"].includes(kpi.label)) ?? {
@@ -1014,7 +1044,13 @@ function makeLiveStoreSnapshot(store: StoreSnapshot, result: LiveDutchieResult, 
   const weeklyCurrent = result.analytics.weekly.current;
   const monthlyCurrent = result.analytics.monthly.current;
   const netChange = percentChange(selected.current.netSales, selected.previous.netSales);
-  const status: StoreStatus = netChange < -2 ? "Action" : netChange < 2 ? "Watch" : "Healthy";
+  const inventoryRisk = inventoryRiskCounts(result.analytics.inventory ?? []);
+  const status: StoreStatus =
+    netChange < -2 || inventoryRisk.atRisk / Math.max(inventoryRisk.total, 1) > 0.35
+      ? "Action"
+      : netChange < 2 || inventoryRisk.atRisk > 0
+        ? "Watch"
+        : "Healthy";
 
   return {
     ...store,
@@ -1024,6 +1060,7 @@ function makeLiveStoreSnapshot(store: StoreSnapshot, result: LiveDutchieResult, 
     priorWeekTransactions: weeklyCurrent.transactionCount.toLocaleString("en-US"),
     averageBasket: formatTicket(weeklyCurrent.averageNetTicket),
     monthToDateNet: formatCompactMoney(monthlyCurrent.netSales),
+    inventory: inventoryHealthLabel(result.analytics.inventory ?? [], store.inventory),
     status,
     change: formatSignedPercent(netChange),
     comparison: {
@@ -1043,21 +1080,19 @@ function makeLiveStores(fallbackStores: StoreSnapshot[], snapshot: DutchieSyncSn
 
 function makeLiveRevenueSeries(results: LiveDutchieResult[], period: Period): RevenuePoint[] {
   const current = periodFor(results[0], period).current;
-  const from = new Date(current.from);
-  const to = new Date(current.to);
+  const fromKey = localDateKey(current.from);
+  const toKey = localDateKey(current.to);
   const points = new Map<string, RevenuePoint & { date?: string }>();
 
   for (const result of results) {
     for (const point of result.analytics.dailyNetSales) {
-      const date = new Date(`${point.date}T00:00:00.000Z`);
-
-      if (Number.isNaN(date.getTime()) || date < from || date > to) {
+      if (point.date < fromKey || point.date > toKey) {
         continue;
       }
 
       const key =
         period === "monthly"
-          ? `W${Math.floor((date.getTime() - from.getTime()) / (7 * 86_400_000)) + 1}`
+          ? `W${Math.floor((new Date(`${point.date}T12:00:00.000Z`).getTime() - new Date(`${fromKey}T12:00:00.000Z`).getTime()) / (7 * 86_400_000)) + 1}`
           : point.date;
       const label = period === "monthly" ? key : point.label;
       const existing = points.get(key) ?? { label, revenue: 0, transactions: 0, date: point.date };
@@ -1287,6 +1322,65 @@ function scaleStoreKpiValue(kpi: Kpi, store: StoreSnapshot, period: Period, mult
   return kpi.value.includes("$") ? scaleMoneyLabel(kpi.value, multiplier / 5.2) : kpi.value;
 }
 
+function makeStoreKpis(store: StoreSnapshot, inventory: DutchieInventorySummary[], fallback: Kpi[]): Kpi[] {
+  const fallbackInventory =
+    fallback.find((kpi) => !["Net sales", "Transactions", "Avg net ticket", "Average ticket"].includes(kpi.label)) ??
+    ({
+      label: "Inventory rows",
+      value: "Pending",
+      change: "Sync needed",
+      direction: "flat",
+      detail: "Dutchie inventory reporting",
+      series: [50, 50, 50, 50]
+    } satisfies Kpi);
+
+  const risk = inventoryRiskCounts(inventory);
+  const inventoryKpi: Kpi =
+    inventory.length > 0
+      ? {
+          label: "At-risk inventory",
+          value: `${risk.atRisk.toLocaleString()} rows`,
+          change: `${risk.expiring.toLocaleString()} expiring`,
+          direction: risk.atRisk > 0 ? "down" : "flat",
+          detail: `Store-level Dutchie inventory rows flagged for low stock (${risk.lowStock}), expiry (${risk.expiring}), or low ROI (${risk.lowRoi}).`,
+          series: [
+            Math.max(8, Math.round((risk.lowStock / Math.max(risk.total, 1)) * 100)),
+            Math.max(8, Math.round((risk.expiring / Math.max(risk.total, 1)) * 100)),
+            Math.max(8, Math.round((risk.lowRoi / Math.max(risk.total, 1)) * 100)),
+            Math.min(94, Math.round((risk.atRisk / Math.max(risk.total, 1)) * 100))
+          ]
+        }
+      : fallbackInventory;
+
+  return [
+    {
+      label: "Net sales",
+      value: store.comparison.netSales.current,
+      change: store.comparison.netSales.delta,
+      direction: store.comparison.netSales.direction,
+      detail: store.comparison.netSales.detail,
+      series: [38, 42, 48, 51, 56, 61, 68]
+    },
+    {
+      label: "Transactions",
+      value: store.comparison.transactions.current,
+      change: store.comparison.transactions.percent,
+      direction: store.comparison.transactions.direction,
+      detail: store.comparison.transactions.detail,
+      series: [40, 44, 47, 53, 57, 60, 66]
+    },
+    {
+      label: "Avg net ticket",
+      value: store.comparison.averageTicket.current,
+      change: store.comparison.averageTicket.percent,
+      direction: store.comparison.averageTicket.direction,
+      detail: store.comparison.averageTicket.detail,
+      series: [47, 49, 48, 50, 51, 52, 53]
+    },
+    inventoryKpi
+  ];
+}
+
 function makeStoreBudtenders(store: StoreSnapshot, period: Period) {
   const source = period === "monthly" ? monthlyBudtenders : weeklyBudtenders;
   const storeName = store.name;
@@ -1420,11 +1514,7 @@ export function getStoreReport(storeId: string, period: Period, snapshot?: Dutch
       store.comparison.transactions,
       store.comparison.averageTicket
     ]),
-    kpis: portfolio.kpis.map((kpi) => ({
-      ...kpi,
-      value: scaleStoreKpiValue(kpi, store, period, multiplier),
-      series: scaleSeries(kpi.series, multiplier)
-    })),
+    kpis: makeStoreKpis(store, inventoryItems, portfolio.kpis),
     revenueSeries:
       liveRevenueSeries && liveRevenueSeries.length > 0
         ? liveRevenueSeries
