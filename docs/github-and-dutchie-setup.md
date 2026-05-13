@@ -95,8 +95,10 @@ Recommended production setup:
 
 - GitHub private repo
 - Vercel project connected to that repo
-- Vercel Postgres, Supabase, or Neon for the database
+- Vercel Postgres, Supabase, or Neon for the `DATABASE_URL` / `POSTGRES_URL` snapshot store
 - Vercel environment variables for the six Dutchie keys
 - Vercel Cron for weekly/monthly sync and email reports
 
 Add the same `.env.local` values in Vercel Project Settings under Environment Variables. Never expose Dutchie keys to the browser.
+
+The deployed dashboard reads the latest Dutchie snapshot from the `dutchie_sync_snapshots` table when `DATABASE_URL`, `POSTGRES_URL`, or `POSTGRES_PRISMA_URL` is set. Without that production database value, Vercel cannot persist the local `data/` snapshot and the app will correctly fall back to mock data.

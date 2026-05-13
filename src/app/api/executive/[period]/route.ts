@@ -7,6 +7,8 @@ import {
 } from "@/lib/executive-intelligence";
 import { getDashboardData, getPeriod } from "@/lib/mock-dutchie";
 
+export const dynamic = "force-dynamic";
+
 type ExecutiveRouteProps = {
   params: Promise<{
     period: string;

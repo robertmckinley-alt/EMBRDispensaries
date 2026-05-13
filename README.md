@@ -16,6 +16,7 @@ A Next.js dashboard MVP for multi-dispensary Dutchie POS analytics. It ships wit
 - Protected weekly and monthly email report routes
 - Secure server-side Dutchie client using Basic Auth
 - Protected sync endpoint at `/api/sync/dutchie`
+- Durable production Dutchie snapshot storage through `DATABASE_URL`
 
 ## Local Setup
 
@@ -76,7 +77,7 @@ Invoke-RestMethod -Method POST `
   -ContentType "application/json"
 ```
 
-The included `vercel.json` schedules weekly emails on Mondays at 15:00 UTC and monthly emails on the first day of the month at 15:00 UTC.
+The included `vercel.json` schedules weekly emails on Mondays at 15:00 UTC and monthly emails on the first day of the month at 15:00 UTC. Each scheduled report refreshes the Dutchie snapshot first, then sends the email and PDF attachments.
 
 ## Dutchie Sync
 
@@ -94,11 +95,14 @@ Invoke-RestMethod -Method POST `
   -Headers @{ Authorization = "Bearer YOUR_CRON_SECRET" }
 ```
 
-For production, wire the same endpoint to Vercel Cron or a scheduled worker. The current route verifies each configured store, fetches products, inventory reporting, and register transactions for a date window, then saves a local sync summary in `data/`. The next step is to persist full reporting rows into Postgres tables and calculate the weekly/monthly dashboard cards from that data.
+For production, set `DATABASE_URL` in Vercel along with `CRON_SECRET`, `DUTCHIE_STORES`, and each store's Dutchie key. `POSTGRES_URL` and `POSTGRES_PRISMA_URL` are also supported if Vercel provides those instead. The sync route verifies each configured store, fetches products, inventory reporting, register transactions, and executive analytics, then saves the latest snapshot to Postgres. Local development still writes `data/dutchie-sync-snapshot.json`.
+
+Production will show mock fallback data until a durable snapshot exists. After the first deployment with `DATABASE_URL` configured, run the protected sync endpoint once or wait for the next scheduled report cron to refresh Dutchie.
 
 ## Suggested Database Tables
 
 - `stores`
+- `dutchie_sync_snapshots`
 - `sync_runs`
 - `products`
 - `inventory_snapshots`

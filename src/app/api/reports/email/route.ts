@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { sendReportEmail } from "@/lib/reports";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 function isAuthorized(request: Request) {
   const secret = process.env.CRON_SECRET;

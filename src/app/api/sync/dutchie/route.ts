@@ -1,22 +1,16 @@
 import { NextResponse } from "next/server";
-import { getDutchieStoreConfigs, syncDutchieStore } from "@/lib/dutchie";
-import { saveDutchieSyncSnapshot } from "@/lib/dutchie-sync-snapshot";
+import { getDutchieStoreConfigs } from "@/lib/dutchie";
+import { refreshDutchieSyncSnapshot } from "@/lib/dutchie-sync-snapshot";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 300;
 
 function unauthorized() {
   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 }
 
-function getSyncWindow() {
-  const to = new Date();
-  const from = new Date(to);
-  from.setUTCDate(from.getUTCDate() - 32);
-
-  return { from, to };
-}
-
-export async function POST(request: Request) {
+async function syncDutchie(request: Request) {
   const secret = process.env.CRON_SECRET;
 
   if (!secret) {
@@ -45,19 +39,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const window = getSyncWindow();
-  const results = await Promise.all(stores.map((store) => syncDutchieStore(store, window)));
-  const snapshot = {
-    ok: results.every((result) => result.verified && result.errors.length === 0),
-    syncedAt: new Date().toISOString(),
-    window: {
-      from: window.from.toISOString(),
-      to: window.to.toISOString()
-    },
-    results
-  };
-
-  await saveDutchieSyncSnapshot(snapshot);
+  const snapshot = await refreshDutchieSyncSnapshot(stores);
 
   return NextResponse.json(snapshot);
+}
+
+export async function GET(request: Request) {
+  return syncDutchie(request);
+}
+
+export async function POST(request: Request) {
+  return syncDutchie(request);
 }

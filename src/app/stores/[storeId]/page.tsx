@@ -36,6 +36,8 @@ import {
 } from "@/lib/mock-dutchie";
 import { getStoreIntelligence, type StoreIntelligence, type StoreIntelligenceItem } from "@/lib/store-intelligence";
 
+export const dynamic = "force-dynamic";
+
 type StorePageProps = {
   params: Promise<{
     storeId: string;
