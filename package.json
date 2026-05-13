@@ -11,10 +11,12 @@
     "sync:dutchie": "node --env-file=.env.local scripts/sync-dutchie.mjs"
   },
   "dependencies": {
+    "framer-motion": "^12.38.0",
     "lucide-react": "latest",
     "next": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "recharts": "^3.8.1"
   },
   "overrides": {
     "postcss": "8.5.10"

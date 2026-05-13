@@ -58,10 +58,13 @@ Use the `Export PDF` button in the dashboard or store report. It opens the brows
 Add these values to `.env.local`:
 
 ```env
-REPORT_RECIPIENTS=owner@example.com,ops@example.com
+REPORT_RECIPIENTS=rmckinley@pandasolutions.co,patrickb@pandasolutions.co,brettd@growopfarms.com,queenpanda@growopfarms.com,bhorrigan@pandasolutions.co,ryanw@embr.us
 REPORT_EMAIL_FROM=EMBR Reports <reports@example.com>
+REPORT_BASE_URL=https://your-production-domain.com
 RESEND_API_KEY=
 ```
+
+The report route uses the leadership distribution list above by default if `REPORT_RECIPIENTS` is omitted. Each send includes a live dashboard link plus PDF attachments for the portfolio report and individual store reports.
 
 Protected manual send:
 

@@ -30,8 +30,8 @@ body {
   margin: 0;
   min-width: 320px;
   background:
-    linear-gradient(135deg, rgba(86, 214, 138, 0.09), transparent 27rem),
-    radial-gradient(circle at 88% 12%, rgba(92, 199, 215, 0.09), transparent 24rem),
+    linear-gradient(135deg, rgba(86, 214, 138, 0.075), transparent 34rem),
+    linear-gradient(180deg, rgba(92, 199, 215, 0.055), transparent 22rem),
     var(--bg);
   color: var(--text);
   font-family: "Geist", "Geist Fallback", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -198,6 +198,309 @@ h1 {
   color: var(--muted);
 }
 
+.executiveHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(21rem, 0.75fr);
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  padding: 1.15rem;
+  border: 1px solid rgba(229, 233, 218, 0.14);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(244, 241, 232, 0.09), rgba(244, 241, 232, 0.025)),
+    linear-gradient(100deg, rgba(86, 214, 138, 0.12), rgba(92, 199, 215, 0.08));
+  box-shadow: var(--shadow);
+}
+
+.executiveHeroCopy {
+  min-width: 0;
+}
+
+.executiveHero h2 {
+  max-width: 11ch;
+  margin: 0 0 0.7rem;
+  font-size: clamp(2.35rem, 5vw, 5.2rem);
+  line-height: 0.94;
+}
+
+.executiveHero p {
+  max-width: 46rem;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.executiveHeroActions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 16rem));
+  gap: 0.7rem;
+  margin-top: 1.2rem;
+}
+
+.executiveHeroActions .dataPointDrilldown,
+.executiveNarrativeCard {
+  padding: 0.85rem;
+  border: 1px solid rgba(229, 233, 218, 0.14);
+  border-radius: 8px;
+  background: rgba(17, 19, 17, 0.5);
+}
+
+.executiveNarrativeCard {
+  display: grid;
+  align-content: start;
+  gap: 1rem;
+}
+
+.executiveCardTop {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.executiveCardTop strong {
+  display: block;
+}
+
+.executiveCardTop p,
+.executiveNarrativeCard li {
+  color: var(--muted);
+}
+
+.executiveNarrativeCard ul {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.executiveChartGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.premiumChartPanel.wide {
+  grid-row: span 2;
+}
+
+.premiumChart {
+  width: 100%;
+  min-height: 18.75rem;
+  margin-top: 0.75rem;
+}
+
+.executiveDeckGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
+.executiveMetricDeck {
+  min-width: 0;
+}
+
+.executiveMetricGrid {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.executiveMetric {
+  padding: 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.executiveMetric.good {
+  border-color: rgba(86, 214, 138, 0.26);
+}
+
+.executiveMetric.watch {
+  border-color: rgba(243, 201, 105, 0.28);
+}
+
+.executiveMetric.risk {
+  border-color: rgba(240, 127, 107, 0.32);
+}
+
+.executiveInsightGrid {
+  align-items: stretch;
+}
+
+.insightBoard {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.executiveInsight {
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.executiveInsight > summary {
+  display: grid;
+  grid-template-columns: 5.6rem minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.executiveInsight > summary::after {
+  display: none;
+}
+
+.executiveInsight > summary span,
+.executiveInsight > summary small {
+  color: var(--subtle);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.executiveInsight strong {
+  display: block;
+}
+
+.executiveInsight p {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.executiveInsight.good {
+  border-color: rgba(86, 214, 138, 0.22);
+}
+
+.executiveInsight.watch {
+  border-color: rgba(243, 201, 105, 0.28);
+}
+
+.executiveInsight.risk {
+  border-color: rgba(240, 127, 107, 0.3);
+}
+
+.promptPanel pre {
+  max-height: 29rem;
+  margin: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.marketHeatmapPanel {
+  margin-top: 0.85rem;
+}
+
+.marketHeatmap {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.marketTile {
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.marketTile > summary {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.marketTile > summary::after {
+  display: none;
+}
+
+.marketTile span {
+  color: var(--subtle);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.marketTile strong {
+  font-size: 2rem;
+}
+
+.marketTile p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.marketTile.positive {
+  border-color: rgba(86, 214, 138, 0.22);
+}
+
+.marketTile.watch {
+  border-color: rgba(243, 201, 105, 0.28);
+}
+
+.marketTile.risk {
+  border-color: rgba(240, 127, 107, 0.3);
+}
+
+.reportStudio {
+  margin-top: 0.85rem;
+}
+
+.reportModuleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.reportModule {
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.reportModule > summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: start;
+}
+
+.reportModule > summary::after {
+  display: none;
+}
+
+.reportModule strong {
+  display: block;
+}
+
+.reportModule p,
+.reportModule small {
+  margin: 0.18rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.reportModule.live {
+  border-color: rgba(86, 214, 138, 0.24);
+}
+
+.reportModule.ready {
+  border-color: rgba(92, 199, 215, 0.24);
+}
+
+.reportModule.planned {
+  border-color: rgba(243, 201, 105, 0.28);
+}
+
 .toolbar {
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -269,7 +572,7 @@ h1 {
 
 .metricGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(15.5rem, 1fr));
   gap: 0.85rem;
 }
 
@@ -324,7 +627,8 @@ h1 {
   margin: 1rem 0;
 }
 
-.storeStats div {
+.storeStats > div,
+.storeStats > .dataPointDrilldown {
   min-width: 0;
   padding: 0.65rem;
   border: 1px solid var(--line);
@@ -355,7 +659,8 @@ h1 {
   margin: -0.35rem 0 1rem;
 }
 
-.storeComparison div {
+.storeComparison > div,
+.storeComparison > .dataPointDrilldown {
   min-width: 0;
   padding: 0.55rem;
   border: 1px solid rgba(244, 241, 232, 0.08);
@@ -447,7 +752,7 @@ h1 {
 }
 
 .metricCard {
-  min-height: 11rem;
+  min-height: 9.5rem;
   padding: 1rem;
 }
 
@@ -534,6 +839,67 @@ h1 {
   margin-top: 0.85rem;
 }
 
+.periodContextBar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 0.85rem;
+}
+
+.periodContextPoint {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(92, 199, 215, 0.08), rgba(244, 241, 232, 0.035));
+}
+
+.periodContextPoint > summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.75rem;
+}
+
+.periodContextPoint > summary::after {
+  grid-column: 2;
+}
+
+.periodContextIcon {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid rgba(92, 199, 215, 0.22);
+  border-radius: 8px;
+  color: var(--teal);
+  background: rgba(92, 199, 215, 0.1);
+}
+
+.periodContextPoint span:not(.periodContextIcon) {
+  display: block;
+  color: var(--subtle);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.periodContextPoint strong {
+  display: block;
+  margin-top: 0.16rem;
+  overflow-wrap: anywhere;
+  font-size: 0.94rem;
+}
+
+.periodContextPoint small {
+  display: block;
+  margin-top: 0.18rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
 .liveDutchiePanel {
   margin-top: 0.85rem;
 }
@@ -552,7 +918,8 @@ h1 {
   margin-bottom: 0.85rem;
 }
 
-.liveSummary div {
+.liveSummary > div,
+.liveSummary > .dataPointDrilldown {
   min-width: 0;
   padding: 0.75rem;
   border: 1px solid var(--line);
@@ -865,6 +1232,12 @@ h1 {
   margin-top: 0.85rem;
 }
 
+.inventoryTableStack {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.85rem;
+}
+
 .budtenderGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -873,7 +1246,7 @@ h1 {
 }
 
 .compactTablePanel table {
-  min-width: 42rem;
+  min-width: 38rem;
 }
 
 .singleReport {
@@ -886,7 +1259,7 @@ h1 {
   top: 0;
   z-index: 5;
   display: grid;
-  grid-template-columns: repeat(9, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.35rem;
   margin-bottom: 0.85rem;
   padding: 0.45rem;
@@ -897,13 +1270,21 @@ h1 {
 }
 
 .storeSectionNav a {
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   min-height: 2rem;
-  place-items: center;
   border-radius: 6px;
   color: var(--muted);
   font-size: 0.76rem;
   font-weight: 800;
+}
+
+.storeSectionNav a.active {
+  background: rgba(86, 214, 138, 0.16);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px rgba(86, 214, 138, 0.28);
 }
 
 .storeSectionNav a:hover {
@@ -972,16 +1353,128 @@ h1 {
   color: var(--text);
 }
 
+.ownerReadoutGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.ownerReadoutCard {
+  min-width: 0;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(244, 241, 232, 0.075), rgba(0, 0, 0, 0.14));
+}
+
+.ownerReadoutCard > summary {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.ownerReadoutCard > summary::after {
+  display: none;
+}
+
+.ownerReadoutCard span {
+  display: block;
+  color: var(--subtle);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ownerReadoutCard strong {
+  display: block;
+  margin-top: 0.2rem;
+  overflow-wrap: anywhere;
+  font-size: clamp(1.1rem, 1.7vw, 1.45rem);
+}
+
+.ownerReadoutCard p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.ownerReadoutCard.good {
+  border-color: rgba(86, 214, 138, 0.24);
+}
+
+.ownerReadoutCard.risk {
+  border-color: rgba(240, 127, 107, 0.28);
+}
+
+.ownerReadoutCard.priority {
+  border-color: rgba(243, 201, 105, 0.34);
+}
+
+.ownerMeter {
+  height: 0.52rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(244, 241, 232, 0.08);
+}
+
+.ownerMeter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), var(--teal));
+}
+
+.ownerReadoutCard.risk .ownerMeter span {
+  background: linear-gradient(90deg, var(--rose), var(--amber));
+}
+
+.ownerMeter.amber span {
+  background: linear-gradient(90deg, var(--amber), var(--green));
+}
+
+.visualMapPanel {
+  margin-bottom: 0.85rem;
+}
+
+.opportunityBars {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.opportunityBar {
+  min-width: 0;
+  padding: 0.72rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.opportunityBar > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: center;
+}
+
+.opportunityBar > summary::after {
+  display: none;
+}
+
+.opportunityBar .ownerMeter {
+  grid-column: 1 / -1;
+}
+
 .storeInsightGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   gap: 0.85rem;
   margin-top: 0.85rem;
 }
 
 .insightCardGrid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 0.75rem;
 }
 
@@ -1059,12 +1552,14 @@ h1 {
   align-items: center;
 }
 
-.barCompareRow strong {
+.barCompareRow > strong,
+.barCompareRow > summary > strong {
   grid-row: span 2;
   color: var(--text);
 }
 
-.barCompareRow div {
+.barCompareRow > div,
+.barCompareRow > summary > div {
   position: relative;
   min-height: 1.15rem;
   overflow: hidden;
@@ -1072,21 +1567,25 @@ h1 {
   background: rgba(244, 241, 232, 0.08);
 }
 
-.barCompareRow div:nth-child(2) span {
+.barCompareRow > div:nth-child(2) span,
+.barCompareRow > summary > div:nth-child(2) span {
   background: var(--green);
 }
 
-.barCompareRow div:nth-child(3) span {
+.barCompareRow > div:nth-child(3) span,
+.barCompareRow > summary > div:nth-child(3) span {
   background: rgba(92, 199, 215, 0.6);
 }
 
-.barCompareRow div span {
+.barCompareRow > div span,
+.barCompareRow > summary > div span {
   display: block;
   height: 100%;
   border-radius: inherit;
 }
 
-.barCompareRow small {
+.barCompareRow > div small,
+.barCompareRow > summary > div small {
   position: absolute;
   inset: 0;
   display: flex;
@@ -1144,21 +1643,63 @@ h1 {
 }
 
 .tableWrap {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  border: 1px solid rgba(244, 241, 232, 0.06);
+  border-radius: 8px;
+}
+
+.miniTableWrap {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0.75rem;
+  overflow-x: auto;
+  border: 1px solid rgba(244, 241, 232, 0.08);
+  border-radius: 8px;
+}
+
+.miniTable {
+  width: 100%;
+  min-width: 44rem;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+}
+
+.miniTable th,
+.miniTable td {
+  padding: 0.48rem 0.55rem;
+  border-bottom: 1px solid rgba(244, 241, 232, 0.06);
+  text-align: left;
+  vertical-align: top;
+}
+
+.miniTable th {
+  color: var(--subtle);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.miniTable td {
+  color: var(--text);
 }
 
 table {
   width: 100%;
-  min-width: 46rem;
+  min-width: 40rem;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 th,
 td {
-  padding: 0.85rem 0.7rem;
+  padding: 0.72rem 0.64rem;
   border-bottom: 1px solid var(--line);
   text-align: left;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  vertical-align: top;
 }
 
 th {
@@ -1172,6 +1713,16 @@ th {
 td {
   color: var(--muted);
   font-size: 0.88rem;
+}
+
+td:nth-child(1),
+th:nth-child(1) {
+  width: 11.5rem;
+}
+
+td:last-child,
+th:last-child {
+  white-space: normal;
 }
 
 td strong {
@@ -1207,6 +1758,14 @@ td strong {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.85rem;
+}
+
+.singleColumnWide {
+  grid-template-columns: 1fr;
+}
+
+.customerTabGrid {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .productRow {
@@ -1277,18 +1836,440 @@ td strong {
   background: var(--rose);
 }
 
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.drilldownDetails,
+.dataPointDrilldown {
+  min-width: 0;
+}
+
+.drilldownDetails > summary,
+.dataPointDrilldown > summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.drilldownDetails > summary::-webkit-details-marker,
+.dataPointDrilldown > summary::-webkit-details-marker {
+  display: none;
+}
+
+.drilldownDetails > summary:focus-visible,
+.dataPointDrilldown > summary:focus-visible {
+  outline: 2px solid rgba(86, 214, 138, 0.72);
+  outline-offset: 4px;
+}
+
+.drilldownDetails[open],
+.dataPointDrilldown[open] {
+  border-color: rgba(86, 214, 138, 0.36);
+}
+
+.drilldownDetails > summary::after,
+.dataPointDrilldown > summary::after {
+  content: "DETAIL";
+  display: inline-grid;
+  width: max-content;
+  min-height: 1.35rem;
+  place-items: center;
+  padding: 0 0.42rem;
+  border: 1px solid rgba(92, 199, 215, 0.28);
+  border-radius: 999px;
+  color: var(--teal);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+}
+
+.dataPointDrilldown > summary {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.dataPointDrilldown > summary span {
+  display: block;
+  color: var(--subtle);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dataPointDrilldown > summary strong {
+  display: block;
+  margin-top: 0.12rem;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.dataPointDrilldown > summary small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  white-space: normal;
+}
+
+.drilldownBody {
+  grid-column: 1 / -1;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.drilldownBody.compact {
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+}
+
+.drilldownIntro strong {
+  display: block;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.drilldownIntro p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.drilldownList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0.75rem 0 0;
+}
+
+.drilldownList.compact {
+  grid-template-columns: 1fr;
+}
+
+.drilldownDetails .drilldownList,
+.dataPointDrilldown .drilldownList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.drilldownDetails .drilldownList.compact,
+.dataPointDrilldown .drilldownList.compact {
+  grid-template-columns: 1fr;
+}
+
+.drilldownList div {
+  min-width: 0;
+  padding: 0.6rem;
+  border: 1px solid rgba(244, 241, 232, 0.08);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.11);
+}
+
+.drilldownList dt {
+  color: var(--subtle);
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.drilldownList dd {
+  margin: 0.18rem 0 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
+  font-weight: 800;
+}
+
+.drilldownList small {
+  display: block;
+  margin-top: 0.22rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+
+.drilldownActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.drilldownActions a,
+.storeNameLink {
+  color: var(--text);
+}
+
+.drilldownActions a {
+  display: inline-grid;
+  min-height: 1.75rem;
+  place-items: center;
+  padding: 0 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.drilldownActions a:hover,
+.storeNameLink:hover {
+  color: var(--green);
+}
+
+.metricCard > summary {
+  display: block;
+}
+
+.comparisonCard > summary,
+.insightCard > summary,
+.marketingCard > summary {
+  display: block;
+}
+
+.segmentCard > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.8fr);
+  gap: 0.85rem;
+}
+
+.comparisonCard > summary > div,
+.comparisonCard > summary > p {
+  min-width: 0;
+}
+
+.comparisonCard > summary > div {
+  display: grid;
+  gap: 0.22rem;
+}
+
+.comparisonCard > summary > span.changePill {
+  margin: 0.8rem 0 0.5rem;
+}
+
+.legendItem > summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+details.legendItem {
+  display: block;
+}
+
+.legendItem > summary::after,
+.signalRow > summary::after,
+.productRow > summary::after,
+.liveStoreRow > summary::after,
+.alertItem > summary::after,
+.barCompareRow > summary::after,
+.segmentCard > summary::after,
+.marketingCard > summary::after,
+.insightCard > summary::after,
+.comparisonCard > summary::after {
+  display: none;
+}
+
+details.signalRow {
+  display: block;
+}
+
+.signalRow > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(7rem, 0.75fr);
+  gap: 0.75rem;
+  align-items: center;
+}
+
+details.productRow,
+details.barCompareRow,
+details.liveStoreRow {
+  display: block;
+}
+
+.productRow > summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.liveStoreRow > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.9fr);
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.liveStoreRow > summary > div:first-child {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.35rem 0.55rem;
+  align-items: center;
+}
+
+.liveStoreRow > summary small {
+  grid-column: 2;
+}
+
+.liveStoreRow > summary dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.barCompareRow > summary {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.alertItem > summary {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.7rem;
+}
+
+.alertItem > summary > span {
+  width: 0.6rem;
+  height: 100%;
+  min-height: 2.5rem;
+  border-radius: 999px;
+}
+
+.alertItem.good > summary > span {
+  background: var(--green);
+}
+
+.alertItem.warn > summary > span {
+  background: var(--amber);
+}
+
+.alertItem.risk > summary > span {
+  background: var(--rose);
+}
+
+.tableDrilldown {
+  display: inline-grid;
+  width: 100%;
+  min-width: 0;
+  max-width: 16rem;
+  vertical-align: top;
+}
+
+.tableDrilldown > summary {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.tableDrilldown > summary::after {
+  display: none;
+}
+
+.tableDrilldown .drilldownBody {
+  white-space: normal;
+}
+
+.clickableStoreCard {
+  position: relative;
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.clickableStoreCard:hover {
+  border-color: rgba(86, 214, 138, 0.34);
+  transform: translateY(-1px);
+}
+
+.storeCardOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+}
+
+.storeCard > *:not(.storeCardOverlay) {
+  position: relative;
+  z-index: 1;
+}
+
+.storeIntelStrip,
+.marketMetricGrid,
+.eventSignalList,
+.storeHeroMetrics {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.storeIntelStrip {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: -0.35rem 0 1rem;
+}
+
+.storeIntelStrip .dataPointDrilldown,
+.marketMetricGrid .dataPointDrilldown,
+.eventSignalList .dataPointDrilldown,
+.storeHeroMetrics .dataPointDrilldown {
+  padding: 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.marketPanel {
+  margin-top: 0.85rem;
+}
+
+.marketMetricGrid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
+.eventSignalList {
+  grid-template-columns: 1fr;
+}
+
+.storeHeroMetrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 0.85rem;
+}
+
 @media (max-width: 1180px) {
   .metricGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .dashboardGrid,
+  .executiveChartGrid,
+  .executiveDeckGrid,
   .lowerGrid,
   .budtenderGrid {
     grid-template-columns: 1fr;
   }
 
+  .premiumChartPanel.wide {
+    grid-row: auto;
+  }
+
   .comparisonGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .periodContextBar,
+  .ownerReadoutGrid,
+  .marketHeatmap,
+  .reportModuleGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1300,8 +2281,22 @@ td strong {
     grid-template-columns: 1fr;
   }
 
+  .liveStoreRow > summary {
+    grid-template-columns: 1fr;
+  }
+
+  .marketMetricGrid,
+  .storeIntelStrip,
+  .storeHeroMetrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .storeGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .storeSectionNav {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .revenueChart {
@@ -1311,6 +2306,10 @@ td strong {
 
 @media (max-width: 860px) {
   .appShell {
+    grid-template-columns: 1fr;
+  }
+
+  .executiveHero {
     grid-template-columns: 1fr;
   }
 
@@ -1340,6 +2339,10 @@ td strong {
   .toolbar {
     justify-content: flex-start;
   }
+
+  .executiveHeroActions {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1362,9 +2365,22 @@ td strong {
 
   .storeComparison,
   .comparisonGrid,
+  .periodContextBar,
+  .ownerReadoutGrid,
+  .marketHeatmap,
+  .reportModuleGrid,
   .liveSummary,
-  .liveStoreRow dl {
+  .liveStoreRow dl,
+  .liveStoreRow > summary dl,
+  .marketMetricGrid,
+  .storeIntelStrip,
+  .storeHeroMetrics,
+  .drilldownList {
     grid-template-columns: 1fr;
+  }
+
+  .storeSectionNav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .storeCardTop,
@@ -1372,6 +2388,15 @@ td strong {
   .storeHero {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .executiveHero h2 {
+    max-width: none;
+  }
+
+  .executiveInsight > summary,
+  .reportModule > summary {
+    grid-template-columns: 1fr;
   }
 
   .iconTextButton {
@@ -1400,6 +2425,11 @@ td strong {
 
   .productRow {
     grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .productRow > summary,
+  .signalRow > summary {
+    grid-template-columns: 1fr;
   }
 
   .productMeta {

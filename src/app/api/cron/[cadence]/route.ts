@@ -12,9 +12,8 @@ type RouteContext = {
 function isAuthorized(request: Request) {
   const secret = process.env.CRON_SECRET;
   const authorization = request.headers.get("authorization");
-  const isVercelCron = request.headers.get("x-vercel-cron") === "1";
 
-  return Boolean((secret && authorization === `Bearer ${secret}`) || isVercelCron);
+  return Boolean(secret && authorization === `Bearer ${secret}`);
 }
 
 export async function GET(request: Request, context: RouteContext) {

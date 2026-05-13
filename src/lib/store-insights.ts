@@ -266,11 +266,11 @@ export function getStoreInsights(store: StoreSnapshot, period: Period): StoreIns
       expectedLift: "Lower stockout leakage"
     },
     {
-      title: "Raise average ticket in evening rush",
+      title: "Raise avg net ticket in evening rush",
       audience: "Evening shoppers buying single item baskets",
       offer: "Attach edible or pre-roll bundle at checkout",
       channel: "In-store + POS prompt",
-      expectedLift: "+$2.50 avg ticket"
+      expectedLift: "+$2.50 avg net ticket"
     }
   ];
 

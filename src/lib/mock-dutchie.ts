@@ -1,3 +1,6 @@
+import type { DutchieFinancialPeriod, DutchieInventorySummary, DutchieProductSummary, DutchieSyncResult } from "@/lib/dutchie";
+import type { DutchieSyncSnapshot } from "@/lib/dutchie-sync-snapshot";
+
 export type Period = "weekly" | "monthly";
 
 export type Kpi = {
@@ -78,6 +81,27 @@ export type ProductVelocity = {
   units: number;
   revenue: string;
   trend: string;
+  sku?: string;
+  brand?: string;
+  vendor?: string;
+  avgNetPrice?: string;
+  margin?: string;
+  marginDollars?: string;
+  lineItems?: ProductVelocityLineItem[];
+};
+
+export type ProductVelocityLineItem = {
+  productId: number;
+  sku: string;
+  name: string;
+  brand: string;
+  vendor: string;
+  category: string;
+  units: number;
+  revenue: string;
+  avgNetPrice: string;
+  margin: string;
+  marginDollars: string;
 };
 
 export type Alert = {
@@ -92,6 +116,7 @@ export type DashboardData = {
   subtitle: string;
   lastSync: string;
   dateRange: string;
+  periodContext: PeriodContext;
   comparisonTitle: string;
   comparisons: ComparisonMetric[];
   kpis: Kpi[];
@@ -113,12 +138,14 @@ export type StoreReport = {
   title: string;
   subtitle: string;
   dateRange: string;
+  periodContext: PeriodContext;
   comparisonTitle: string;
   comparisons: ComparisonMetric[];
   kpis: Kpi[];
   revenueSeries: RevenuePoint[];
   categoryMix: CategoryMix[];
   inventorySignals: InventorySignal[];
+  inventoryItems: DutchieInventorySummary[];
   products: ProductVelocity[];
   budtenders: {
     top: BudtenderMetric[];
@@ -127,7 +154,17 @@ export type StoreReport = {
   alerts: Alert[];
 };
 
-export const stores: StoreSnapshot[] = [
+export type PeriodContext = {
+  currentPeriod: string;
+  comparisonPeriod: string;
+  basis: string;
+  includedStores: string;
+  excludedStores: string;
+  source: string;
+  lastSync: string;
+};
+
+const rawStores: StoreSnapshot[] = [
   {
     id: "springfield",
     name: "EMBR Springfield",
@@ -145,7 +182,7 @@ export const stores: StoreSnapshot[] = [
     comparison: {
       netSales: { label: "Net sales", current: "$112.4K", previous: "$102.4K", delta: "+$10.0K", percent: "+9.8%", direction: "up", detail: "vs previous week" },
       transactions: { label: "Transactions", current: "1,782", previous: "1,656", delta: "+126", percent: "+7.6%", direction: "up", detail: "ticket count" },
-      averageTicket: { label: "Average ticket", current: "$63.08", previous: "$61.75", delta: "+$1.33", percent: "+2.2%", direction: "up", detail: "net per ticket" }
+      averageTicket: { label: "Avg net ticket", current: "$63.08", previous: "$61.75", delta: "+$1.33", percent: "+2.2%", direction: "up", detail: "net per ticket" }
     }
   },
   {
@@ -165,7 +202,7 @@ export const stores: StoreSnapshot[] = [
     comparison: {
       netSales: { label: "Net sales", current: "$94.7K", previous: "$88.4K", delta: "+$6.3K", percent: "+7.1%", direction: "up", detail: "vs previous week" },
       transactions: { label: "Transactions", current: "1,489", previous: "1,417", delta: "+72", percent: "+5.1%", direction: "up", detail: "ticket count" },
-      averageTicket: { label: "Average ticket", current: "$63.60", previous: "$62.43", delta: "+$1.17", percent: "+1.9%", direction: "up", detail: "net per ticket" }
+      averageTicket: { label: "Avg net ticket", current: "$63.60", previous: "$62.43", delta: "+$1.17", percent: "+1.9%", direction: "up", detail: "net per ticket" }
     }
   },
   {
@@ -185,7 +222,7 @@ export const stores: StoreSnapshot[] = [
     comparison: {
       netSales: { label: "Net sales", current: "$84.1K", previous: "$79.4K", delta: "+$4.7K", percent: "+5.9%", direction: "up", detail: "vs previous week" },
       transactions: { label: "Transactions", current: "1,352", previous: "1,286", delta: "+66", percent: "+5.1%", direction: "up", detail: "ticket count" },
-      averageTicket: { label: "Average ticket", current: "$62.20", previous: "$61.73", delta: "+$0.47", percent: "+0.8%", direction: "up", detail: "net per ticket" }
+      averageTicket: { label: "Avg net ticket", current: "$62.20", previous: "$61.73", delta: "+$0.47", percent: "+0.8%", direction: "up", detail: "net per ticket" }
     }
   },
   {
@@ -205,7 +242,7 @@ export const stores: StoreSnapshot[] = [
     comparison: {
       netSales: { label: "Net sales", current: "$76.8K", previous: "$67.4K", delta: "+$9.4K", percent: "+14.0%", direction: "up", detail: "vs previous week" },
       transactions: { label: "Transactions", current: "1,227", previous: "1,073", delta: "+154", percent: "+14.4%", direction: "up", detail: "ticket count" },
-      averageTicket: { label: "Average ticket", current: "$62.59", previous: "$62.80", delta: "-$0.21", percent: "-0.3%", direction: "down", detail: "net per ticket" }
+      averageTicket: { label: "Avg net ticket", current: "$62.59", previous: "$62.80", delta: "-$0.21", percent: "-0.3%", direction: "down", detail: "net per ticket" }
     }
   },
   {
@@ -225,7 +262,7 @@ export const stores: StoreSnapshot[] = [
     comparison: {
       netSales: { label: "Net sales", current: "$60.6K", previous: "$62.7K", delta: "-$2.1K", percent: "-3.4%", direction: "down", detail: "vs previous week" },
       transactions: { label: "Transactions", current: "992", previous: "1,028", delta: "-36", percent: "-3.5%", direction: "down", detail: "ticket count" },
-      averageTicket: { label: "Average ticket", current: "$61.09", previous: "$61.05", delta: "+$0.04", percent: "+0.1%", direction: "up", detail: "net per ticket" }
+      averageTicket: { label: "Avg net ticket", current: "$61.09", previous: "$61.05", delta: "+$0.04", percent: "+0.1%", direction: "up", detail: "net per ticket" }
     }
   },
   {
@@ -245,10 +282,12 @@ export const stores: StoreSnapshot[] = [
     comparison: {
       netSales: { label: "Net sales", current: "$71.2K", previous: "$66.9K", delta: "+$4.3K", percent: "+6.5%", direction: "up", detail: "vs previous week" },
       transactions: { label: "Transactions", current: "1,124", previous: "1,043", delta: "+81", percent: "+7.8%", direction: "up", detail: "ticket count" },
-      averageTicket: { label: "Average ticket", current: "$63.35", previous: "$64.13", delta: "-$0.78", percent: "-1.2%", direction: "down", detail: "net per ticket" }
+      averageTicket: { label: "Avg net ticket", current: "$63.35", previous: "$64.13", delta: "-$0.78", percent: "-1.2%", direction: "down", detail: "net per ticket" }
     }
   }
 ];
+
+export const stores: StoreSnapshot[] = rawStores.map(normalizeStore);
 
 const weeklyBudtenders: BudtenderMetric[] = [
   { name: "Maya R.", store: "EMBR Springfield", transactions: 248, grossSales: "$18.9K", netSales: "$17.6K", discounts: "$1.3K", averageBasket: "$70.96", units: 721 },
@@ -257,7 +296,7 @@ const weeklyBudtenders: BudtenderMetric[] = [
   { name: "Sam K.", store: "HLC Greenfield", transactions: 107, grossSales: "$6.3K", netSales: "$5.7K", discounts: "$0.6K", averageBasket: "$53.27", units: 284 },
   { name: "Taylor N.", store: "EMBR Lake Elsinore", transactions: 98, grossSales: "$5.8K", netSales: "$5.1K", discounts: "$0.7K", averageBasket: "$52.04", units: 251 },
   { name: "Avery L.", store: "FYRE ANTS", transactions: 91, grossSales: "$5.2K", netSales: "$4.7K", discounts: "$0.5K", averageBasket: "$51.65", units: 229 }
-];
+].map(normalizeBudtender);
 
 const monthlyBudtenders: BudtenderMetric[] = [
   { name: "Maya R.", store: "EMBR Springfield", transactions: 934, grossSales: "$72.4K", netSales: "$67.8K", discounts: "$4.6K", averageBasket: "$72.59", units: 2761 },
@@ -266,25 +305,34 @@ const monthlyBudtenders: BudtenderMetric[] = [
   { name: "Sam K.", store: "HLC Greenfield", transactions: 406, grossSales: "$24.3K", netSales: "$22.0K", discounts: "$2.3K", averageBasket: "$54.19", units: 1102 },
   { name: "Taylor N.", store: "EMBR Lake Elsinore", transactions: 378, grossSales: "$21.9K", netSales: "$19.4K", discounts: "$2.5K", averageBasket: "$51.32", units: 978 },
   { name: "Avery L.", store: "FYRE ANTS", transactions: 351, grossSales: "$19.8K", netSales: "$17.8K", discounts: "$2.0K", averageBasket: "$50.71", units: 905 }
-];
+].map(normalizeBudtender);
 
 const weekly: DashboardData = {
   period: "weekly",
   title: "Previous week snapshot",
   subtitle: "Six-store owner view with store report links",
   lastSync: "Today, 6:12 AM",
-  dateRange: "May 6 - May 12",
+  dateRange: "May 4 - May 10, 2026",
+  periodContext: {
+    currentPeriod: "May 4 - May 10, 2026",
+    comparisonPeriod: "Apr 27 - May 3, 2026",
+    basis: "Net sales after discounts; avg net ticket is net sales divided by transaction count.",
+    includedStores: "6 of 6 sample stores",
+    excludedStores: "None",
+    source: "Mock fallback completed Monday-Sunday week",
+    lastSync: "Today, 6:12 AM"
+  },
   comparisonTitle: "Week over week, net basis",
   comparisons: [
     { label: "Net sales", current: "$499.8K", previous: "$462.4K", delta: "+$37.4K", percent: "+8.1%", direction: "up", detail: "current week vs previous week" },
     { label: "Transactions", current: "7,966", previous: "7,529", delta: "+437", percent: "+5.8%", direction: "up", detail: "ticket count change" },
-    { label: "Average ticket", current: "$62.74", previous: "$61.41", delta: "+$1.33", percent: "+2.2%", direction: "up", detail: "net sales per ticket" },
+    { label: "Avg net ticket", current: "$62.74", previous: "$61.41", delta: "+$1.33", percent: "+2.2%", direction: "up", detail: "net sales per ticket" },
     { label: "Net sales / day", current: "$71.4K", previous: "$66.1K", delta: "+$5.3K", percent: "+8.1%", direction: "up", detail: "daily net run-rate" }
   ],
   kpis: [
     { label: "Net sales", value: "$499.8K", change: "+$37.4K", direction: "up", detail: "week over week", series: [36, 43, 40, 48, 55, 62, 67] },
     { label: "Transactions", value: "7,966", change: "+5.8%", direction: "up", detail: "avg 1,138 per day", series: [52, 58, 49, 61, 64, 70, 73] },
-    { label: "Average ticket", value: "$62.74", change: "+2.7%", direction: "up", detail: "net sales per ticket", series: [46, 44, 47, 52, 54, 57, 60] },
+    { label: "Avg net ticket", value: "$62.74", change: "+2.7%", direction: "up", detail: "net sales per ticket", series: [46, 44, 47, 52, 54, 57, 60] },
     { label: "At-risk inventory", value: "41 SKUs", change: "-12", direction: "down", detail: "needs reorder review", series: [72, 68, 64, 60, 55, 51, 44] }
   ],
   revenueSeries: [
@@ -328,21 +376,30 @@ const weekly: DashboardData = {
 
 const monthly: DashboardData = {
   period: "monthly",
-  title: "Current monthly report",
-  subtitle: "Month-to-date ownership summary",
+  title: "Previous month report",
+  subtitle: "Completed calendar month ownership summary",
   lastSync: "Today, 6:12 AM",
-  dateRange: "May 1 - May 31",
-  comparisonTitle: "MTD vs previous month, net basis",
+  dateRange: "Apr 1 - Apr 30, 2026",
+  periodContext: {
+    currentPeriod: "Apr 1 - Apr 30, 2026",
+    comparisonPeriod: "Mar 1 - Mar 31, 2026",
+    basis: "Net sales after discounts; avg net ticket is net sales divided by transaction count.",
+    includedStores: "6 of 6 sample stores",
+    excludedStores: "None",
+    source: "Mock fallback completed calendar month",
+    lastSync: "Today, 6:12 AM"
+  },
+  comparisonTitle: "Completed month vs prior completed month, net basis",
   comparisons: [
     { label: "Net sales", current: "$2.01M", previous: "$1.80M", delta: "+$205K", percent: "+11.4%", direction: "up", detail: "same elapsed days" },
     { label: "Transactions", current: "31,994", previous: "29,252", delta: "+2,742", percent: "+9.4%", direction: "up", detail: "ticket count change" },
-    { label: "Average ticket", current: "$62.83", previous: "$61.70", delta: "+$1.13", percent: "+1.8%", direction: "up", detail: "net sales per ticket" },
+    { label: "Avg net ticket", current: "$62.83", previous: "$61.70", delta: "+$1.13", percent: "+1.8%", direction: "up", detail: "net sales per ticket" },
     { label: "Net sales / day", current: "$64.9K", previous: "$58.3K", delta: "+$6.6K", percent: "+11.4%", direction: "up", detail: "daily net run-rate" }
   ],
   kpis: [
-    { label: "Net sales", value: "$2.01M", change: "+$205K", direction: "up", detail: "MTD net basis", series: [41, 45, 48, 54, 52, 61, 69] },
+    { label: "Net sales", value: "$2.01M", change: "+$205K", direction: "up", detail: "Completed month net basis", series: [41, 45, 48, 54, 52, 61, 69] },
     { label: "Transactions", value: "31,994", change: "+9.4%", direction: "up", detail: "steady weekend lift", series: [50, 52, 55, 58, 61, 64, 71] },
-    { label: "Average ticket", value: "$62.83", change: "+1.8%", direction: "up", detail: "net sales per ticket", series: [47, 47, 49, 50, 53, 54, 57] },
+    { label: "Avg net ticket", value: "$62.83", change: "+1.8%", direction: "up", detail: "net sales per ticket", series: [47, 47, 49, 50, 53, 54, 57] },
     { label: "Inventory turns", value: "3.8x", change: "+0.4", direction: "up", detail: "monthly run-rate", series: [38, 43, 42, 49, 55, 58, 63] }
   ],
   revenueSeries: [
@@ -375,8 +432,8 @@ const monthly: DashboardData = {
     bottom: monthlyBudtenders.slice(-3)
   },
   alerts: [
-    { title: "Premium flower is gaining share", body: "Top-shelf 3.5g SKUs now account for 22% of flower revenue.", tone: "good" },
-    { title: "Lake Elsinore average ticket erosion", body: "EMBR Lake Elsinore average ticket is down 4.1% from last month.", tone: "risk" },
+    { title: "Premium flower is gaining share", body: "Top-shelf 3.5g SKUs now account for 22% of flower net sales.", tone: "good" },
+    { title: "Lake Elsinore avg net ticket erosion", body: "EMBR Lake Elsinore avg net ticket is down 4.1% from last month.", tone: "risk" },
     { title: "Pre-roll velocity has reordering risk", body: "Two high-velocity products will stock out before the next scheduled delivery.", tone: "warn" }
   ]
 };
@@ -398,12 +455,687 @@ function formatMoney(value: number) {
   }).format(value);
 }
 
-function scaleMoneyLabel(label: string, multiplier: number) {
-  const normalized = label.replace(/[$,]/g, "");
+function formatTicket(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(value);
+}
+
+function formatSignedTicket(value: number) {
+  if (Math.abs(value) < 0.005) {
+    return "$0.00";
+  }
+
+  return `${value > 0 ? "+" : "-"}${formatTicket(Math.abs(value))}`;
+}
+
+function formatSignedPercent(value: number) {
+  if (Math.abs(value) < 0.05) {
+    return "0.0%";
+  }
+
+  return `${value > 0 ? "+" : ""}${value.toFixed(1)}%`;
+}
+
+function directionFromDelta(value: number): "up" | "down" | "flat" {
+  if (value > 0) {
+    return "up";
+  }
+
+  if (value < 0) {
+    return "down";
+  }
+
+  return "flat";
+}
+
+function isAverageTicketLabel(label: string) {
+  const normalized = label.toLowerCase();
+  return normalized === "average ticket" || normalized === "avg ticket" || normalized === "avg net ticket";
+}
+
+function parseMoneyLabel(label: string) {
+  const trimmed = label.trim();
+  const sign = trimmed.startsWith("-") ? -1 : 1;
+  const normalized = trimmed.replace(/[$,+-]/g, "").trim().toUpperCase();
   const suffix = normalized.endsWith("M") ? "M" : normalized.endsWith("K") ? "K" : "";
   const number = Number(normalized.replace(/[MK]/g, ""));
-  const dollars = suffix === "M" ? number * 1_000_000 : suffix === "K" ? number * 1_000 : number;
-  const scaled = dollars * multiplier;
+
+  if (!Number.isFinite(number)) {
+    return 0;
+  }
+
+  if (suffix === "M") {
+    return sign * number * 1_000_000;
+  }
+
+  if (suffix === "K") {
+    return sign * number * 1_000;
+  }
+
+  return sign * number;
+}
+
+function parseCountLabel(label: string) {
+  const value = Number(label.replace(/[,+]/g, ""));
+  return Number.isFinite(value) ? value : 0;
+}
+
+function netAverageTicket(netSales: string, transactions: string | number) {
+  const transactionCount = typeof transactions === "number" ? transactions : parseCountLabel(transactions);
+
+  if (transactionCount <= 0) {
+    return 0;
+  }
+
+  return parseMoneyLabel(netSales) / transactionCount;
+}
+
+function buildAverageTicketComparison(netSales: ComparisonMetric, transactions: ComparisonMetric): ComparisonMetric {
+  const current = netAverageTicket(netSales.current, transactions.current);
+  const previous = netAverageTicket(netSales.previous, transactions.previous);
+  const delta = current - previous;
+  const percent = previous > 0 ? (delta / previous) * 100 : 0;
+
+  return {
+    label: "Avg net ticket",
+    current: formatTicket(current),
+    previous: formatTicket(previous),
+    delta: formatSignedTicket(delta),
+    percent: formatSignedPercent(percent),
+    direction: directionFromDelta(delta),
+    detail: "net sales per ticket"
+  };
+}
+
+function normalizeStore(store: StoreSnapshot): StoreSnapshot {
+  const averageTicket = buildAverageTicketComparison(store.comparison.netSales, store.comparison.transactions);
+
+  return {
+    ...store,
+    priorWeekRevenue: store.priorWeekNet,
+    averageBasket: averageTicket.current,
+    comparison: {
+      ...store.comparison,
+      averageTicket
+    }
+  };
+}
+
+function normalizeBudtender(budtender: BudtenderMetric): BudtenderMetric {
+  return {
+    ...budtender,
+    averageBasket: formatTicket(netAverageTicket(budtender.netSales, budtender.transactions))
+  };
+}
+
+function normalizeDashboardData(data: DashboardData): DashboardData {
+  const netSales = data.comparisons.find((comparison) => comparison.label === "Net sales");
+  const transactions = data.comparisons.find((comparison) => comparison.label === "Transactions");
+  const averageTicket = netSales && transactions ? buildAverageTicketComparison(netSales, transactions) : null;
+
+  if (!averageTicket) {
+    return data;
+  }
+
+  return {
+    ...data,
+    comparisons: data.comparisons.map((comparison) =>
+      isAverageTicketLabel(comparison.label) ? averageTicket : comparison
+    ),
+    kpis: data.kpis.map((kpi) =>
+      isAverageTicketLabel(kpi.label)
+        ? {
+            ...kpi,
+            label: "Avg net ticket",
+            value: averageTicket.current,
+            change: averageTicket.percent,
+            direction: averageTicket.direction,
+            detail: averageTicket.detail
+          }
+        : kpi
+    )
+  };
+}
+
+type LiveDutchieResult = DutchieSyncResult & {
+  analytics: NonNullable<DutchieSyncResult["analytics"]>;
+};
+
+function isLiveDutchieResult(result: DutchieSyncResult): result is LiveDutchieResult {
+  return Boolean(result.verified && result.analytics);
+}
+
+function getLiveDutchieResults(snapshot: DutchieSyncSnapshot | null | undefined) {
+  return snapshot?.results.filter(isLiveDutchieResult) ?? [];
+}
+
+function formatCompactMoney(value: number) {
+  const absolute = Math.abs(value);
+  const sign = value < 0 ? "-" : "";
+
+  if (absolute >= 1_000_000) {
+    return `${sign}$${(absolute / 1_000_000).toFixed(2)}M`;
+  }
+
+  if (absolute >= 1_000) {
+    return `${sign}$${(absolute / 1_000).toFixed(1)}K`;
+  }
+
+  return `${sign}${formatMoney(absolute)}`;
+}
+
+function formatSignedCompactMoney(value: number) {
+  if (Math.abs(value) < 0.5) {
+    return "$0";
+  }
+
+  return `${value > 0 ? "+" : ""}${formatCompactMoney(value)}`;
+}
+
+function formatSignedCount(value: number) {
+  if (value === 0) {
+    return "0";
+  }
+
+  return `${value > 0 ? "+" : ""}${Math.round(value).toLocaleString("en-US")}`;
+}
+
+function percentChange(current: number, previous: number) {
+  if (!previous) {
+    return 0;
+  }
+
+  return ((current - previous) / Math.abs(previous)) * 100;
+}
+
+function comparisonDirection(current: number, previous: number) {
+  return directionFromDelta(current - previous);
+}
+
+function buildLiveMoneyComparison(label: string, current: number, previous: number, detail: string): ComparisonMetric {
+  const delta = current - previous;
+
+  return {
+    label,
+    current: formatCompactMoney(current),
+    previous: formatCompactMoney(previous),
+    delta: formatSignedCompactMoney(delta),
+    percent: formatSignedPercent(percentChange(current, previous)),
+    direction: directionFromDelta(delta),
+    detail
+  };
+}
+
+function buildLiveCountComparison(label: string, current: number, previous: number, detail: string): ComparisonMetric {
+  const delta = current - previous;
+
+  return {
+    label,
+    current: Math.round(current).toLocaleString("en-US"),
+    previous: Math.round(previous).toLocaleString("en-US"),
+    delta: formatSignedCount(delta),
+    percent: formatSignedPercent(percentChange(current, previous)),
+    direction: directionFromDelta(delta),
+    detail
+  };
+}
+
+function customerShare(count: number, total: number) {
+  if (total <= 0) {
+    return "0.0%";
+  }
+
+  return `${((count / total) * 100).toFixed(1)}%`;
+}
+
+function buildLiveCustomerComparison(
+  label: string,
+  current: number,
+  previous: number,
+  currentTotal: number,
+  previousTotal: number,
+  detail: string
+): ComparisonMetric {
+  const comparison = buildLiveCountComparison(label, current, previous, detail);
+
+  return {
+    ...comparison,
+    detail: `${detail}; ${customerShare(current, currentTotal)} of current customers vs ${customerShare(previous, previousTotal)} prior.`
+  };
+}
+
+function buildLiveTicketComparison(current: number, previous: number): ComparisonMetric {
+  const delta = current - previous;
+
+  return {
+    label: "Avg net ticket",
+    current: formatTicket(current),
+    previous: formatTicket(previous),
+    delta: formatSignedTicket(delta),
+    percent: formatSignedPercent(percentChange(current, previous)),
+    direction: directionFromDelta(delta),
+    detail: "Dutchie closing-report averageCartNetSales"
+  };
+}
+
+function emptyFinancialPeriod(): DutchieFinancialPeriod {
+  return {
+    from: "",
+    to: "",
+    grossSales: 0,
+    discounts: 0,
+    netSales: 0,
+    taxes: 0,
+    totalPayments: 0,
+    transactionCount: 0,
+    customerCount: 0,
+    newCustomerCount: 0,
+    returningCustomerCount: 0,
+    itemCount: 0,
+    averageNetTicket: 0,
+    returnTotal: 0,
+    voidTotal: 0
+  };
+}
+
+function sumFinancialPeriods(periods: DutchieFinancialPeriod[]): DutchieFinancialPeriod {
+  if (periods.length === 0) {
+    return emptyFinancialPeriod();
+  }
+
+  const totals = periods.reduce(
+    (total, period) => ({
+      from: total.from && total.from < period.from ? total.from : period.from,
+      to: total.to && total.to > period.to ? total.to : period.to,
+      grossSales: total.grossSales + period.grossSales,
+      discounts: total.discounts + period.discounts,
+      netSales: total.netSales + period.netSales,
+      taxes: total.taxes + period.taxes,
+      totalPayments: total.totalPayments + period.totalPayments,
+      transactionCount: total.transactionCount + period.transactionCount,
+      customerCount: total.customerCount + (period.customerCount ?? 0),
+      newCustomerCount: total.newCustomerCount + (period.newCustomerCount ?? 0),
+      returningCustomerCount: total.returningCustomerCount + (period.returningCustomerCount ?? 0),
+      itemCount: total.itemCount + period.itemCount,
+      averageNetTicket: 0,
+      returnTotal: total.returnTotal + period.returnTotal,
+      voidTotal: total.voidTotal + period.voidTotal
+    }),
+    { ...emptyFinancialPeriod(), from: periods[0].from, to: periods[0].to }
+  );
+
+  return {
+    ...totals,
+    averageNetTicket: totals.transactionCount > 0 ? totals.netSales / totals.transactionCount : 0
+  };
+}
+
+function periodFor(result: LiveDutchieResult, period: Period) {
+  return result.analytics[period];
+}
+
+function formatDateRange(from: string, to: string) {
+  const start = new Date(from);
+  const end = new Date(to);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    return "Live Dutchie period";
+  }
+
+  const timeZone = "America/Los_Angeles";
+  const startParts = new Intl.DateTimeFormat("en-US", { year: "numeric", timeZone }).formatToParts(start);
+  const endParts = new Intl.DateTimeFormat("en-US", { year: "numeric", timeZone }).formatToParts(end);
+  const startYear = Number(startParts.find((part) => part.type === "year")?.value);
+  const endYear = Number(endParts.find((part) => part.type === "year")?.value);
+  const sameYear = startYear === endYear;
+  const startFormatter = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: sameYear ? undefined : "numeric",
+    timeZone
+  });
+  const endFormatter = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone });
+
+  return `${startFormatter.format(start)} - ${endFormatter.format(end)}`;
+}
+
+function formatLastSync(value: string) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Live Dutchie sync";
+  }
+
+  return `Dutchie sync ${new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(date)}`;
+}
+
+function makeLiveComparisonSet(current: DutchieFinancialPeriod, previous: DutchieFinancialPeriod): ComparisonMetric[] {
+  const currentNetPerDay = current.netSales / Math.max((new Date(current.to).getTime() - new Date(current.from).getTime()) / 86_400_000, 1);
+  const previousNetPerDay = previous.netSales / Math.max((new Date(previous.to).getTime() - new Date(previous.from).getTime()) / 86_400_000, 1);
+
+  return [
+    buildLiveMoneyComparison("Net sales", current.netSales, previous.netSales, "Dutchie closing-report netSales"),
+    buildLiveCountComparison("Transactions", current.transactionCount, previous.transactionCount, "Dutchie closing-report transactionCount"),
+    buildLiveTicketComparison(current.averageNetTicket, previous.averageNetTicket),
+    buildLiveCustomerComparison(
+      "Returning customers",
+      current.returningCustomerCount ?? 0,
+      previous.returningCustomerCount ?? 0,
+      current.customerCount ?? 0,
+      previous.customerCount ?? 0,
+      "Dutchie closing-report customerCount minus newCustomerCount"
+    ),
+    buildLiveCustomerComparison(
+      "New customers",
+      current.newCustomerCount ?? 0,
+      previous.newCustomerCount ?? 0,
+      current.customerCount ?? 0,
+      previous.customerCount ?? 0,
+      "Dutchie closing-report newCustomerCount"
+    ),
+    buildLiveMoneyComparison("Net sales / day", currentNetPerDay, previousNetPerDay, "Daily net run-rate from closing-report")
+  ];
+}
+
+function makeLiveKpis(current: DutchieFinancialPeriod, previous: DutchieFinancialPeriod, fallback: Kpi[]): Kpi[] {
+  const comparisons = makeLiveComparisonSet(current, previous);
+  const fallbackInventory = fallback.find((kpi) => !["Net sales", "Transactions", "Avg net ticket", "Average ticket"].includes(kpi.label));
+
+  return [
+    { label: "Net sales", value: comparisons[0].current, change: comparisons[0].delta, direction: comparisons[0].direction, detail: "Dutchie netSales", series: [38, 42, 48, 51, 56, 61, 68] },
+    { label: "Transactions", value: comparisons[1].current, change: comparisons[1].percent, direction: comparisons[1].direction, detail: "Dutchie transactionCount", series: [40, 44, 47, 53, 57, 60, 66] },
+    { label: "Avg net ticket", value: comparisons[2].current, change: comparisons[2].percent, direction: comparisons[2].direction, detail: "Dutchie averageCartNetSales", series: [47, 49, 48, 50, 51, 52, 53] },
+    fallbackInventory ?? { label: "Inventory rows", value: "Live", change: "Synced", direction: "flat", detail: "Dutchie inventory reporting", series: [50, 50, 50, 50, 50, 50, 50] }
+  ];
+}
+
+function makeUnavailableStore(store: StoreSnapshot, result: DutchieSyncResult | undefined): StoreSnapshot {
+  const reason = result?.errors[0] ?? "No live Dutchie analytics in the latest sync.";
+  const unavailable: ComparisonMetric = {
+    label: "Net sales",
+    current: "Unavailable",
+    previous: "Unavailable",
+    delta: "n/a",
+    percent: "n/a",
+    direction: "flat",
+    detail: reason
+  };
+
+  return {
+    ...store,
+    priorWeekRevenue: "Unavailable",
+    priorWeekGross: "Unavailable",
+    priorWeekNet: "Unavailable",
+    priorWeekTransactions: "Unavailable",
+    averageBasket: "Unavailable",
+    monthToDateNet: "Unavailable",
+    status: "Action",
+    change: "API",
+    comparison: {
+      netSales: unavailable,
+      transactions: { ...unavailable, label: "Transactions" },
+      averageTicket: { ...unavailable, label: "Avg net ticket" }
+    }
+  };
+}
+
+function makeLiveStoreSnapshot(store: StoreSnapshot, result: LiveDutchieResult, period: Period): StoreSnapshot {
+  const selected = periodFor(result, period);
+  const weeklyCurrent = result.analytics.weekly.current;
+  const monthlyCurrent = result.analytics.monthly.current;
+  const netChange = percentChange(selected.current.netSales, selected.previous.netSales);
+  const status: StoreStatus = netChange < -2 ? "Action" : netChange < 2 ? "Watch" : "Healthy";
+
+  return {
+    ...store,
+    priorWeekRevenue: formatCompactMoney(weeklyCurrent.netSales),
+    priorWeekGross: formatCompactMoney(weeklyCurrent.grossSales),
+    priorWeekNet: formatCompactMoney(weeklyCurrent.netSales),
+    priorWeekTransactions: weeklyCurrent.transactionCount.toLocaleString("en-US"),
+    averageBasket: formatTicket(weeklyCurrent.averageNetTicket),
+    monthToDateNet: formatCompactMoney(monthlyCurrent.netSales),
+    status,
+    change: formatSignedPercent(netChange),
+    comparison: {
+      netSales: buildLiveMoneyComparison("Net sales", selected.current.netSales, selected.previous.netSales, "Dutchie closing-report netSales"),
+      transactions: buildLiveCountComparison("Transactions", selected.current.transactionCount, selected.previous.transactionCount, "Dutchie closing-report transactionCount"),
+      averageTicket: buildLiveTicketComparison(selected.current.averageNetTicket, selected.previous.averageNetTicket)
+    }
+  };
+}
+
+function makeLiveStores(fallbackStores: StoreSnapshot[], snapshot: DutchieSyncSnapshot, period: Period) {
+  return fallbackStores.map((store) => {
+    const result = snapshot.results.find((candidate) => candidate.storeId === store.id);
+    return result && isLiveDutchieResult(result) ? makeLiveStoreSnapshot(store, result, period) : makeUnavailableStore(store, result);
+  });
+}
+
+function makeLiveRevenueSeries(results: LiveDutchieResult[], period: Period): RevenuePoint[] {
+  const current = periodFor(results[0], period).current;
+  const from = new Date(current.from);
+  const to = new Date(current.to);
+  const points = new Map<string, RevenuePoint & { date?: string }>();
+
+  for (const result of results) {
+    for (const point of result.analytics.dailyNetSales) {
+      const date = new Date(`${point.date}T00:00:00.000Z`);
+
+      if (Number.isNaN(date.getTime()) || date < from || date > to) {
+        continue;
+      }
+
+      const key =
+        period === "monthly"
+          ? `W${Math.floor((date.getTime() - from.getTime()) / (7 * 86_400_000)) + 1}`
+          : point.date;
+      const label = period === "monthly" ? key : point.label;
+      const existing = points.get(key) ?? { label, revenue: 0, transactions: 0, date: point.date };
+      existing.revenue += point.netSales;
+      existing.transactions += point.transactions;
+      points.set(key, existing);
+    }
+  }
+
+  return Array.from(points.values())
+    .sort((a, b) => (a.date ?? a.label).localeCompare(b.date ?? b.label))
+    .map(({ date, ...point }) => ({
+      ...point,
+      revenue: Math.round(point.revenue),
+      transactions: Math.round(point.transactions)
+    }));
+}
+
+function makeLiveBudtenderMetric(budtender: LiveDutchieResult["analytics"]["weeklyBudtenders"][number], storeName: string): BudtenderMetric {
+  return {
+    name: budtender.name,
+    store: storeName,
+    transactions: budtender.transactions,
+    grossSales: formatCompactMoney(budtender.grossSales),
+    netSales: formatCompactMoney(budtender.netSales),
+    discounts: formatCompactMoney(budtender.discounts),
+    averageBasket: formatTicket(budtender.transactions > 0 ? budtender.netSales / budtender.transactions : 0),
+    units: Math.round(budtender.units)
+  };
+}
+
+function makeLiveBudtenders(results: LiveDutchieResult[], period: Period) {
+  const metrics = results.flatMap((result) => {
+    const source = period === "monthly" ? result.analytics.monthlyBudtenders : result.analytics.weeklyBudtenders;
+    return source.map((budtender) => makeLiveBudtenderMetric(budtender, result.storeName));
+  });
+  const withTickets = metrics.filter((metric) => metric.transactions > 0);
+
+  return {
+    top: [...withTickets].sort((a, b) => parseMoneyLabel(b.netSales) - parseMoneyLabel(a.netSales)).slice(0, 3),
+    bottom: [...withTickets].sort((a, b) => parseMoneyLabel(a.netSales) - parseMoneyLabel(b.netSales)).slice(0, 3)
+  };
+}
+
+function productGroupName(product: DutchieProductSummary) {
+  if (product.vendor) {
+    return product.brand && !product.vendor.toLowerCase().includes(product.brand.toLowerCase())
+      ? `${product.brand} / ${product.vendor}`
+      : product.vendor;
+  }
+
+  return product.brand || product.name;
+}
+
+function productGroupKey(product: DutchieProductSummary) {
+  return productGroupName(product).toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function makeProductLineItem(product: DutchieProductSummary): ProductVelocityLineItem {
+  const units = Math.round(product.units);
+  const avgNet = units > 0 ? product.netSales / units : 0;
+  const marginDollars = product.unitCost ? (avgNet - product.unitCost) * units : 0;
+  const marginPercent = product.unitCost && avgNet > 0 ? (marginDollars / product.netSales) * 100 : 0;
+
+  return {
+    productId: product.productId,
+    sku: product.sku || product.productId.toString(),
+    name: product.name,
+    brand: product.brand || "Unassigned brand",
+    vendor: product.vendor || "Unassigned vendor",
+    category: product.category,
+    units,
+    revenue: formatCompactMoney(product.netSales),
+    avgNetPrice: formatTicket(avgNet),
+    margin: product.unitCost ? `${marginPercent.toFixed(1)}%` : "Cost n/a",
+    marginDollars: product.unitCost ? formatMoney(marginDollars) : "Cost n/a"
+  };
+}
+
+function makeLiveProducts(results: LiveDutchieResult[], period: Period): ProductVelocity[] {
+  const products = new Map<
+    string,
+    {
+      name: string;
+      category: string;
+      units: number;
+      netSales: number;
+      costOfGoods: number;
+      lineItems: ProductVelocityLineItem[];
+    }
+  >();
+
+  for (const result of results) {
+    const source = period === "monthly" ? result.analytics.monthlyProducts : result.analytics.weeklyProducts;
+
+    for (const product of source) {
+      const key = productGroupKey(product);
+      const existing = products.get(key) ?? {
+        name: productGroupName(product),
+        category: product.category,
+        units: 0,
+        netSales: 0,
+        costOfGoods: 0,
+        lineItems: []
+      };
+      existing.units += product.units;
+      existing.netSales += product.netSales;
+      existing.costOfGoods += product.unitCost ? product.unitCost * product.units : 0;
+      existing.lineItems.push(makeProductLineItem(product));
+      existing.lineItems.sort((a, b) => parseMoneyLabel(b.revenue) - parseMoneyLabel(a.revenue));
+      existing.category =
+        existing.category === product.category ? existing.category : `${existing.lineItems.length} product categories`;
+      products.set(key, existing);
+    }
+  }
+
+  return Array.from(products.values())
+    .sort((a, b) => b.netSales - a.netSales)
+    .slice(0, 24)
+    .map((product): ProductVelocity => {
+      const marginDollars = product.costOfGoods > 0 ? product.netSales - product.costOfGoods : 0;
+      const margin = product.costOfGoods > 0 && product.netSales > 0 ? `${((marginDollars / product.netSales) * 100).toFixed(1)}%` : "Cost n/a";
+      const topLine = product.lineItems[0];
+
+      return {
+      name: product.name,
+      category: product.category,
+      units: Math.round(product.units),
+      revenue: formatCompactMoney(product.netSales),
+        trend: product.lineItems.length > 1 ? `${product.lineItems.length} SKUs` : "Live net",
+        sku: topLine?.sku,
+        brand: topLine?.brand,
+        vendor: topLine?.vendor,
+        avgNetPrice: formatTicket(product.netSales / Math.max(product.units, 1)),
+        margin,
+        marginDollars: product.costOfGoods > 0 ? formatMoney(marginDollars) : "Cost n/a",
+        lineItems: product.lineItems
+      };
+    });
+}
+
+function buildLiveDashboardData(period: Period, fallback: DashboardData, snapshot: DutchieSyncSnapshot): DashboardData {
+  const liveResults = getLiveDutchieResults(snapshot);
+
+  if (liveResults.length === 0) {
+    return fallback;
+  }
+
+  const current = sumFinancialPeriods(liveResults.map((result) => periodFor(result, period).current));
+  const previous = sumFinancialPeriods(liveResults.map((result) => periodFor(result, period).previous));
+  const revenueSeries = makeLiveRevenueSeries(liveResults, period);
+  const unavailableStores = snapshot.results.filter((result) => !isLiveDutchieResult(result)).map((result) => result.storeName);
+  const currentPeriod = formatDateRange(current.from, current.to);
+  const comparisonPeriod = formatDateRange(previous.from, previous.to);
+  const lastSync = formatLastSync(snapshot.syncedAt);
+
+  return {
+    ...fallback,
+    title: period === "monthly" ? "Live Dutchie completed month" : "Live Dutchie completed week",
+    subtitle: `${liveResults.length} connected stores; unavailable stores are excluded from totals`,
+    lastSync,
+    dateRange: currentPeriod,
+    periodContext: {
+      currentPeriod,
+      comparisonPeriod,
+      basis: "Dutchie closing-report netSales, transactionCount, averageCartNetSales, customerCount, and newCustomerCount. Unavailable stores are excluded from live totals.",
+      includedStores: `${liveResults.length} of ${snapshot.results.length} Dutchie stores`,
+      excludedStores: unavailableStores.length > 0 ? unavailableStores.join(", ") : "None",
+      source: period === "monthly" ? "Live Dutchie completed calendar month" : "Live Dutchie completed Monday-Sunday week",
+      lastSync
+    },
+    comparisonTitle: period === "monthly" ? "Completed month vs prior completed month, net basis" : "Completed Monday-Sunday week vs prior week, net basis",
+    comparisons: makeLiveComparisonSet(current, previous),
+    kpis: makeLiveKpis(current, previous, fallback.kpis),
+    revenueSeries: revenueSeries.length > 0 ? revenueSeries : fallback.revenueSeries,
+    stores: makeLiveStores(fallback.stores, snapshot, period),
+    products: makeLiveProducts(liveResults, period),
+    budtenders: makeLiveBudtenders(liveResults, period),
+    alerts: [
+      {
+        title: "Live Dutchie financials loaded",
+        body: "Net sales, transaction count, avg net ticket, returning customers, and new customers are now sourced from Dutchie closing-report fields.",
+        tone: "good"
+      },
+      ...snapshot.results
+        .filter((result) => !isLiveDutchieResult(result))
+        .slice(0, 2)
+        .map((result) => ({
+          title: `${result.storeName} needs API attention`,
+          body: result.errors[0] ?? "No live analytics were returned in the latest sync.",
+          tone: "risk" as const
+        })),
+      ...fallback.alerts.slice(0, 1)
+    ]
+  };
+}
+
+function scaleMoneyLabel(label: string, multiplier: number) {
+  const scaled = parseMoneyLabel(label) * multiplier;
 
   if (scaled >= 1_000_000) {
     return `$${(scaled / 1_000_000).toFixed(2)}M`;
@@ -418,18 +1150,15 @@ function scaleSeries(series: number[], multiplier: number) {
 
 function scaleStoreKpiValue(kpi: Kpi, store: StoreSnapshot, period: Period, multiplier: number) {
   if (kpi.label === "Net sales") {
-    return period === "monthly" ? store.monthToDateNet : store.priorWeekNet;
+    return store.comparison.netSales.current;
   }
 
   if (kpi.label === "Transactions") {
-    const weeklyTransactions = Number(store.priorWeekTransactions.replace(/,/g, ""));
-    return period === "monthly"
-      ? Math.round(weeklyTransactions * 4.1).toLocaleString("en-US")
-      : store.priorWeekTransactions;
+    return store.comparison.transactions.current;
   }
 
-  if (kpi.label === "Average ticket") {
-    return store.averageBasket;
+  if (isAverageTicketLabel(kpi.label)) {
+    return store.comparison.averageTicket.current;
   }
 
   return kpi.value.includes("$") ? scaleMoneyLabel(kpi.value, multiplier / 5.2) : kpi.value;
@@ -454,59 +1183,139 @@ function makeStoreBudtenders(store: StoreSnapshot, period: Period) {
     return { top: own.slice(0, 3), bottom: own.slice(-3) };
   }
 
-  return { top: fallbackTop, bottom: fallbackBottom };
+  return { top: fallbackTop.map(normalizeBudtender), bottom: fallbackBottom.map(normalizeBudtender) };
 }
 
-export function getDashboardData(period: Period): DashboardData {
-  return period === "monthly" ? monthly : weekly;
+function makeLiveStoreBudtenders(snapshot: DutchieSyncSnapshot | null | undefined, storeId: string, period: Period) {
+  const result = snapshot?.results.find((candidate) => candidate.storeId === storeId);
+
+  if (!result || !isLiveDutchieResult(result)) {
+    return null;
+  }
+
+  const source = period === "monthly" ? result.analytics.monthlyBudtenders : result.analytics.weeklyBudtenders;
+  const metrics = source
+    .map((budtender) => makeLiveBudtenderMetric(budtender, result.storeName))
+    .filter((metric) => metric.transactions > 0);
+
+  return {
+    top: [...metrics].sort((a, b) => parseMoneyLabel(b.netSales) - parseMoneyLabel(a.netSales)).slice(0, 3),
+    bottom: [...metrics].sort((a, b) => parseMoneyLabel(a.netSales) - parseMoneyLabel(b.netSales)).slice(0, 3)
+  };
+}
+
+function makeLiveStoreRevenueSeries(snapshot: DutchieSyncSnapshot | null | undefined, storeId: string, period: Period) {
+  const result = snapshot?.results.find((candidate) => candidate.storeId === storeId);
+
+  if (!result || !isLiveDutchieResult(result)) {
+    return null;
+  }
+
+  return makeLiveRevenueSeries([result], period);
+}
+
+function makeLiveStoreProducts(snapshot: DutchieSyncSnapshot | null | undefined, storeId: string, period: Period) {
+  const result = snapshot?.results.find((candidate) => candidate.storeId === storeId);
+
+  if (!result || !isLiveDutchieResult(result)) {
+    return null;
+  }
+
+  return makeLiveProducts([result], period);
+}
+
+function makeLiveStoreInventory(snapshot: DutchieSyncSnapshot | null | undefined, storeId: string) {
+  const result = snapshot?.results.find((candidate) => candidate.storeId === storeId);
+
+  if (!result || !isLiveDutchieResult(result)) {
+    return [];
+  }
+
+  return result.analytics.inventory ?? [];
+}
+
+function makeLiveStoreComparisons(
+  snapshot: DutchieSyncSnapshot | null | undefined,
+  storeId: string,
+  period: Period,
+  fallback: ComparisonMetric[]
+) {
+  const result = snapshot?.results.find((candidate) => candidate.storeId === storeId);
+
+  if (!result || !isLiveDutchieResult(result)) {
+    return fallback;
+  }
+
+  const selected = periodFor(result, period);
+  return makeLiveComparisonSet(selected.current, selected.previous);
+}
+
+export function getDashboardData(period: Period, snapshot?: DutchieSyncSnapshot | null): DashboardData {
+  const fallback = normalizeDashboardData(period === "monthly" ? monthly : weekly);
+  return snapshot ? buildLiveDashboardData(period, fallback, snapshot) : fallback;
 }
 
 export function getPeriod(value: string | string[] | undefined): Period {
   return value === "monthly" ? "monthly" : "weekly";
 }
 
-export function getStoreReport(storeId: string, period: Period): StoreReport | null {
-  const store = stores.find((candidate) => candidate.id === storeId);
+export function getStoreReport(storeId: string, period: Period, snapshot?: DutchieSyncSnapshot | null): StoreReport | null {
+  const portfolio = getDashboardData(period, snapshot);
+  const store = portfolio.stores.find((candidate) => candidate.id === storeId);
 
   if (!store) {
     return null;
   }
 
-  const portfolio = getDashboardData(period);
   const multiplier = storeMultipliers[store.id] ?? 0.84;
-  const budtenders = makeStoreBudtenders(store, period);
+  const budtenders = makeLiveStoreBudtenders(snapshot, store.id, period) ?? makeStoreBudtenders(store, period);
+  const liveRevenueSeries = makeLiveStoreRevenueSeries(snapshot, store.id, period);
+  const liveProducts = makeLiveStoreProducts(snapshot, store.id, period);
+  const inventoryItems = makeLiveStoreInventory(snapshot, store.id);
 
   return {
     store,
     period,
-    title: `${store.name} ${period === "monthly" ? "current month" : "previous week"} report`,
+    title: `${store.name} ${period === "monthly" ? "completed month" : "previous week"} report`,
     subtitle: `${store.market} store performance, budtenders, products, and inventory`,
     dateRange: portfolio.dateRange,
+    periodContext: portfolio.periodContext,
     comparisonTitle:
       period === "monthly"
-        ? "Latest week over week, net basis"
-        : "Week over week, net basis",
-    comparisons: [store.comparison.netSales, store.comparison.transactions, store.comparison.averageTicket],
+        ? "Completed month vs prior completed month, net basis"
+        : "Completed Monday-Sunday week vs prior week, net basis",
+    comparisons: makeLiveStoreComparisons(snapshot, store.id, period, [
+      store.comparison.netSales,
+      store.comparison.transactions,
+      store.comparison.averageTicket
+    ]),
     kpis: portfolio.kpis.map((kpi) => ({
       ...kpi,
       value: scaleStoreKpiValue(kpi, store, period, multiplier),
       series: scaleSeries(kpi.series, multiplier)
     })),
-    revenueSeries: portfolio.revenueSeries.map((point) => ({
-      ...point,
-      revenue: Math.round(point.revenue * multiplier * 0.18),
-      transactions: Math.round(point.transactions * multiplier * 0.18)
-    })),
+    revenueSeries:
+      liveRevenueSeries && liveRevenueSeries.length > 0
+        ? liveRevenueSeries
+        : portfolio.revenueSeries.map((point) => ({
+            ...point,
+            revenue: Math.round(point.revenue * multiplier * 0.18),
+            transactions: Math.round(point.transactions * multiplier * 0.18)
+          })),
     categoryMix: portfolio.categoryMix,
     inventorySignals: portfolio.inventorySignals,
-    products: portfolio.products.map((product) => ({
-      ...product,
-      units: Math.round(product.units * multiplier * 0.22),
-      revenue: formatMoney(Number(product.revenue.replace(/[$K]/g, "")) * 1000 * multiplier * 0.18)
-    })),
+    inventoryItems,
+    products:
+      liveProducts && liveProducts.length > 0
+        ? liveProducts
+        : portfolio.products.map((product) => ({
+            ...product,
+            units: Math.round(product.units * multiplier * 0.22),
+            revenue: formatMoney(parseMoneyLabel(product.revenue) * multiplier * 0.18)
+          })),
     budtenders,
     alerts: [
-      { title: `${store.city} snapshot ready`, body: `${store.name} finished the period at ${store.priorWeekNet} net sales with ${store.inventory} inventory health.`, tone: store.status === "Action" ? "risk" : store.status === "Watch" ? "warn" : "good" },
+      { title: `${store.city} snapshot ready`, body: `${store.name} finished the period at ${store.comparison.netSales.current} net sales with ${store.inventory} inventory health.`, tone: store.status === "Action" ? "risk" : store.status === "Watch" ? "warn" : "good" },
       ...portfolio.alerts.slice(0, 2)
     ]
   };

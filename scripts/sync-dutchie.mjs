@@ -40,11 +40,16 @@ for (const result of payload.results || []) {
   const transactions = result.registerTransactionsFetched ?? "n/a";
   const products = result.productsFetched ?? "n/a";
   const inventory = result.inventoryFetched ?? "n/a";
+  const weekly = result.analytics?.weekly?.current;
 
   console.log(`${status} ${result.storeName}`);
   console.log(`  Transactions: ${transactions}`);
   console.log(`  Products: ${products}`);
   console.log(`  Inventory rows: ${inventory}`);
+  if (weekly) {
+    console.log(`  Weekly net sales: ${weekly.netSales.toLocaleString("en-US", { style: "currency", currency: "USD" })}`);
+    console.log(`  Avg net ticket: ${weekly.averageNetTicket.toLocaleString("en-US", { style: "currency", currency: "USD" })}`);
+  }
 
   if (result.errors?.length) {
     console.log(`  Errors: ${result.errors.join("; ")}`);
