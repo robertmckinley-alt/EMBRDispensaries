@@ -411,11 +411,11 @@ function DaypartGraph({
       <div className="panelHeader">
         <div>
           <p className="eyebrow">Transactions</p>
-          <h2>Daypart comparison</h2>
+          <h2>Transaction pattern</h2>
         </div>
         <span className="softBadge">
           <BarChart3 size={15} />
-          Current vs prior week
+          Dutchie period data
         </span>
       </div>
       <div className="barCompareList">
@@ -427,8 +427,8 @@ function DaypartGraph({
             description="Current versus prior period transaction pattern."
             items={[
               { label: "Current", value: point.current.toLocaleString() },
-              { label: "Prior", value: point.previous.toLocaleString() },
-              { label: "Delta", value: (point.current - point.previous).toLocaleString() }
+              { label: "Period average", value: point.previous.toLocaleString() },
+              { label: "Variance", value: (point.current - point.previous).toLocaleString() }
             ]}
             summary={
               <>
@@ -439,7 +439,7 @@ function DaypartGraph({
                 </div>
                 <div>
                   <span style={{ width: `${(point.previous / max) * 100}%` }} />
-                  <small>{point.previous.toLocaleString()} prior</small>
+                  <small>{point.previous.toLocaleString()} average</small>
                 </div>
               </>
             }
@@ -1102,7 +1102,7 @@ export default async function StorePage({ params, searchParams }: StorePageProps
     notFound();
   }
 
-  const insights = getStoreInsights(report.store, period);
+  const insights = getStoreInsights(report);
   const intelligence = getStoreIntelligence(storeId);
   const heroNetSales = report.store.comparison.netSales.current;
   const heroTransactions = report.store.comparison.transactions.current;

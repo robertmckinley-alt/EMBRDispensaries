@@ -846,15 +846,136 @@ function makeLiveComparisonSet(current: DutchieFinancialPeriod, previous: Dutchi
   ];
 }
 
-function makeLiveKpis(current: DutchieFinancialPeriod, previous: DutchieFinancialPeriod, fallback: Kpi[]): Kpi[] {
+const categoryColors = ["#4ade80", "#22d3ee", "#facc15", "#fb7185", "#a78bfa", "#f97316"];
+
+function makeProductVelocityCategoryMix(products: ProductVelocity[], fallback: CategoryMix[]): CategoryMix[] {
+  const categories = new Map<string, number>();
+
+  for (const product of products) {
+    const lineItems = product.lineItems ?? [];
+
+    if (lineItems.length === 0) {
+      categories.set(product.category, (categories.get(product.category) ?? 0) + parseMoneyLabel(product.revenue));
+      continue;
+    }
+
+    for (const line of lineItems) {
+      categories.set(line.category, (categories.get(line.category) ?? 0) + parseMoneyLabel(line.revenue));
+    }
+  }
+
+  const total = Array.from(categories.values()).reduce((sum, value) => sum + value, 0);
+
+  if (total <= 0) {
+    return fallback;
+  }
+
+  return Array.from(categories.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([label, value], index) => ({
+      label,
+      value: Math.max(1, Math.round((value / total) * 100)),
+      color: categoryColors[index % categoryColors.length]
+    }));
+}
+
+function makeLiveCategoryMix(results: LiveDutchieResult[], period: Period, fallback: CategoryMix[]): CategoryMix[] {
+  return makeProductVelocityCategoryMix(makeLiveProducts(results, period), fallback);
+}
+
+function makeInventorySignalsFromInventory(inventory: DutchieInventorySummary[], fallback: InventorySignal[]): InventorySignal[] {
+  if (inventory.length === 0) {
+    return fallback;
+  }
+
+  const rows = inventory.length;
+  const lowStock = inventory.filter((item) => item.onHand <= 5).length;
+  const expiring = inventory.filter((item) => item.daysToExpire !== null && item.daysToExpire <= 30).length;
+  const lowRoi = inventory.filter((item) => item.estimatedRoi <= 15).length;
+  const noSalesExposure = inventory.filter((item) => item.retailValue > 0 && item.onHand > 0).length;
+  const pctOfRows = (count: number) => Math.min(100, Math.max(2, Math.round((count / rows) * 100)));
+
+  return [
+    {
+      label: "Low stock",
+      value: pctOfRows(lowStock),
+      detail: `${lowStock.toLocaleString()} live inventory rows have 5 or fewer units on hand.`,
+      tone: lowStock / rows > 0.18 ? "risk" : lowStock > 0 ? "warn" : "good"
+    },
+    {
+      label: "Expiration risk",
+      value: pctOfRows(expiring),
+      detail: `${expiring.toLocaleString()} packages expire within 30 days based on Dutchie inventory dates.`,
+      tone: expiring / rows > 0.08 ? "risk" : expiring > 0 ? "warn" : "good"
+    },
+    {
+      label: "ROI watch",
+      value: pctOfRows(lowRoi),
+      detail: `${lowRoi.toLocaleString()} rows have estimated ROI at or below 15% from Dutchie cost/price fields.`,
+      tone: lowRoi / rows > 0.2 ? "risk" : lowRoi > 0 ? "warn" : "good"
+    },
+    {
+      label: "Retail exposure",
+      value: pctOfRows(noSalesExposure),
+      detail: `${noSalesExposure.toLocaleString()} rows carry active retail value and should be managed by velocity.`,
+      tone: "good"
+    }
+  ];
+}
+
+function makeLiveInventorySignals(results: LiveDutchieResult[], fallback: InventorySignal[]): InventorySignal[] {
+  return makeInventorySignalsFromInventory(
+    results.flatMap((result) => result.analytics.inventory ?? []),
+    fallback
+  );
+}
+
+function makeLiveKpis(
+  current: DutchieFinancialPeriod,
+  previous: DutchieFinancialPeriod,
+  results: LiveDutchieResult[],
+  fallback: Kpi[]
+): Kpi[] {
   const comparisons = makeLiveComparisonSet(current, previous);
-  const fallbackInventory = fallback.find((kpi) => !["Net sales", "Transactions", "Avg net ticket", "Average ticket"].includes(kpi.label));
+  const inventory = results.flatMap((result) => result.analytics.inventory ?? []);
+  const lowStock = inventory.filter((item) => item.onHand <= 5).length;
+  const expiring = inventory.filter((item) => item.daysToExpire !== null && item.daysToExpire <= 30).length;
+  const lowRoi = inventory.filter((item) => item.estimatedRoi <= 15).length;
+  const atRisk = new Set(
+    inventory
+      .filter((item) => item.onHand <= 5 || (item.daysToExpire !== null && item.daysToExpire <= 30) || item.estimatedRoi <= 15)
+      .map((item) => `${item.inventoryId}-${item.sku}-${item.packageId}`)
+  );
+  const inventoryKpi: Kpi =
+    inventory.length > 0
+      ? {
+          label: "At-risk inventory",
+          value: `${atRisk.size.toLocaleString()} rows`,
+          change: `${expiring.toLocaleString()} expiring`,
+          direction: atRisk.size > 0 ? "down" : "flat",
+          detail: `Dutchie inventory rows flagged for low stock (${lowStock}), expiry (${expiring}), or low ROI (${lowRoi}).`,
+          series: [
+            Math.max(8, Math.round((lowStock / Math.max(inventory.length, 1)) * 100)),
+            Math.max(8, Math.round((expiring / Math.max(inventory.length, 1)) * 100)),
+            Math.max(8, Math.round((lowRoi / Math.max(inventory.length, 1)) * 100)),
+            Math.min(94, Math.round((atRisk.size / Math.max(inventory.length, 1)) * 100))
+          ]
+        }
+      : (fallback.find((kpi) => !["Net sales", "Transactions", "Avg net ticket", "Average ticket"].includes(kpi.label)) ?? {
+          label: "Inventory rows",
+          value: "Pending",
+          change: "Sync needed",
+          direction: "flat",
+          detail: "Dutchie inventory reporting",
+          series: [50, 50, 50, 50]
+        });
 
   return [
     { label: "Net sales", value: comparisons[0].current, change: comparisons[0].delta, direction: comparisons[0].direction, detail: "Dutchie netSales", series: [38, 42, 48, 51, 56, 61, 68] },
     { label: "Transactions", value: comparisons[1].current, change: comparisons[1].percent, direction: comparisons[1].direction, detail: "Dutchie transactionCount", series: [40, 44, 47, 53, 57, 60, 66] },
     { label: "Avg net ticket", value: comparisons[2].current, change: comparisons[2].percent, direction: comparisons[2].direction, detail: "Dutchie averageCartNetSales", series: [47, 49, 48, 50, 51, 52, 53] },
-    fallbackInventory ?? { label: "Inventory rows", value: "Live", change: "Synced", direction: "flat", detail: "Dutchie inventory reporting", series: [50, 50, 50, 50, 50, 50, 50] }
+    inventoryKpi
   ];
 }
 
@@ -1110,8 +1231,10 @@ function buildLiveDashboardData(period: Period, fallback: DashboardData, snapsho
     },
     comparisonTitle: period === "monthly" ? "Completed month vs prior completed month, net basis" : "Completed Monday-Sunday week vs prior week, net basis",
     comparisons: makeLiveComparisonSet(current, previous),
-    kpis: makeLiveKpis(current, previous, fallback.kpis),
+    kpis: makeLiveKpis(current, previous, liveResults, fallback.kpis),
     revenueSeries: revenueSeries.length > 0 ? revenueSeries : fallback.revenueSeries,
+    categoryMix: makeLiveCategoryMix(liveResults, period, fallback.categoryMix),
+    inventorySignals: makeLiveInventorySignals(liveResults, fallback.inventorySignals),
     stores: makeLiveStores(fallback.stores, snapshot, period),
     products: makeLiveProducts(liveResults, period),
     budtenders: makeLiveBudtenders(liveResults, period),
@@ -1272,6 +1395,14 @@ export function getStoreReport(storeId: string, period: Period, snapshot?: Dutch
   const liveRevenueSeries = makeLiveStoreRevenueSeries(snapshot, store.id, period);
   const liveProducts = makeLiveStoreProducts(snapshot, store.id, period);
   const inventoryItems = makeLiveStoreInventory(snapshot, store.id);
+  const products =
+    liveProducts && liveProducts.length > 0
+      ? liveProducts
+      : portfolio.products.map((product) => ({
+          ...product,
+          units: Math.round(product.units * multiplier * 0.22),
+          revenue: formatMoney(parseMoneyLabel(product.revenue) * multiplier * 0.18)
+        }));
 
   return {
     store,
@@ -1302,17 +1433,10 @@ export function getStoreReport(storeId: string, period: Period, snapshot?: Dutch
             revenue: Math.round(point.revenue * multiplier * 0.18),
             transactions: Math.round(point.transactions * multiplier * 0.18)
           })),
-    categoryMix: portfolio.categoryMix,
-    inventorySignals: portfolio.inventorySignals,
+    categoryMix: makeProductVelocityCategoryMix(products, portfolio.categoryMix),
+    inventorySignals: makeInventorySignalsFromInventory(inventoryItems, portfolio.inventorySignals),
     inventoryItems,
-    products:
-      liveProducts && liveProducts.length > 0
-        ? liveProducts
-        : portfolio.products.map((product) => ({
-            ...product,
-            units: Math.round(product.units * multiplier * 0.22),
-            revenue: formatMoney(parseMoneyLabel(product.revenue) * multiplier * 0.18)
-          })),
+    products,
     budtenders,
     alerts: [
       { title: `${store.city} snapshot ready`, body: `${store.name} finished the period at ${store.comparison.netSales.current} net sales with ${store.inventory} inventory health.`, tone: store.status === "Action" ? "risk" : store.status === "Watch" ? "warn" : "good" },
