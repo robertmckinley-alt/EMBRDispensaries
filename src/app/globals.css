@@ -507,6 +507,15 @@ h1 {
   gap: 0.6rem;
 }
 
+.reportActions,
+.syncActionWrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
 .dateBadge,
 .softBadge {
   gap: 0.45rem;
@@ -532,6 +541,47 @@ h1 {
   color: var(--text);
   cursor: pointer;
   font-weight: 750;
+}
+
+.iconTextButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.syncButton {
+  border-color: rgba(92, 199, 215, 0.34);
+  background: rgba(92, 199, 215, 0.11);
+}
+
+.syncButton.syncing svg {
+  animation: syncSpin 0.9s linear infinite;
+}
+
+.syncStatus {
+  max-width: min(18rem, 100%);
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(244, 241, 232, 0.045);
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.25;
+}
+
+.syncStatus.success {
+  border-color: rgba(86, 214, 138, 0.34);
+  color: var(--green);
+}
+
+.syncStatus.error {
+  border-color: rgba(240, 127, 107, 0.38);
+  color: var(--rose);
+}
+
+@keyframes syncSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .segmented {

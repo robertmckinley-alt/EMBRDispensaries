@@ -95,6 +95,8 @@ Invoke-RestMethod -Method POST `
   -Headers @{ Authorization = "Bearer YOUR_CRON_SECRET" }
 ```
 
+The dashboard toolbar also includes a `Sync data` button. Enter the same `CRON_SECRET` value when prompted; the page refreshes after the Dutchie pull completes.
+
 For production, set `DATABASE_URL` in Vercel along with `CRON_SECRET`, `DUTCHIE_STORES`, and each store's Dutchie key. `POSTGRES_URL` and `POSTGRES_PRISMA_URL` are also supported if Vercel provides those instead. The sync route verifies each configured store, fetches products, inventory reporting, register transactions, and executive analytics, then saves the latest snapshot to Postgres. Local development still writes `data/dutchie-sync-snapshot.json`.
 
 Production will show mock fallback data until a durable snapshot exists. After the first deployment with `DATABASE_URL` configured, run the protected sync endpoint once or wait for the next scheduled report cron to refresh Dutchie.
