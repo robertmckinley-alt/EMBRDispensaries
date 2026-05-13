@@ -21,12 +21,6 @@ export function ReportActions() {
   const [syncMessage, setSyncMessage] = useState("");
 
   async function handleManualSync() {
-    const token = window.prompt("Enter the manual sync password. This is the CRON_SECRET value from Vercel.");
-
-    if (!token?.trim()) {
-      return;
-    }
-
     setSyncState("syncing");
     setSyncMessage("Pulling latest Dutchie data...");
 
@@ -34,11 +28,16 @@ export function ReportActions() {
       const response = await fetch("/api/sync/dutchie", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token.trim()}`
-        }
+          "X-Manual-Sync": "dashboard"
+        },
+        cache: "no-store"
       });
       const payload = (await response.json().catch(() => null)) as
-        | { results?: { verified?: boolean; errors?: string[] }[]; error?: string }
+        | {
+            stores?: { connected?: number; total?: number };
+            results?: { verified?: boolean; errors?: string[] }[];
+            error?: string;
+          }
         | null;
 
       if (!response.ok) {
@@ -46,19 +45,17 @@ export function ReportActions() {
       }
 
       const results = payload?.results ?? [];
-      const cleanStores = results.filter((result) => result.verified && (result.errors?.length ?? 0) === 0).length;
-      const storeSummary = results.length > 0 ? `${cleanStores}/${results.length} stores synced.` : "Sync finished.";
+      const cleanStores =
+        payload?.stores?.connected ??
+        results.filter((result) => result.verified && (result.errors?.length ?? 0) === 0).length;
+      const totalStores = payload?.stores?.total ?? results.length;
+      const storeSummary = totalStores > 0 ? `${cleanStores}/${totalStores} stores synced.` : "Sync finished.";
       setSyncState("success");
       setSyncMessage(`${storeSummary} Refreshing report...`);
       router.refresh();
     } catch (error) {
       setSyncState("error");
-      const message = error instanceof Error ? error.message : "Sync failed.";
-      setSyncMessage(
-        message.includes("CRON_SECRET")
-          ? `${message} The manual sync button uses CRON_SECRET, not the database URL.`
-          : message
-      );
+      setSyncMessage(error instanceof Error ? error.message : "Sync failed.");
     }
   }
 

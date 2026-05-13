@@ -95,7 +95,7 @@ Invoke-RestMethod -Method POST `
   -Headers @{ Authorization = "Bearer YOUR_CRON_SECRET" }
 ```
 
-The dashboard toolbar also includes a `Sync data` button. Enter the same `CRON_SECRET` value when prompted; this is the manual sync password, not the database URL. The page refreshes after the Dutchie pull completes.
+The dashboard toolbar also includes a `Sync data` button. It runs a same-origin manual sync from the dashboard without asking for a password. Scheduled Vercel cron calls still use `CRON_SECRET`. The page refreshes after the Dutchie pull completes.
 
 For production, set `DATABASE_URL` in Vercel along with `CRON_SECRET`, `DUTCHIE_STORES`, and each store's Dutchie key. `POSTGRES_URL` and `POSTGRES_PRISMA_URL` are also supported if Vercel provides those instead. The sync route verifies each configured store, fetches products, inventory reporting, register transactions, and executive analytics, then saves the latest snapshot to Postgres. Local development still writes `data/dutchie-sync-snapshot.json`.
 

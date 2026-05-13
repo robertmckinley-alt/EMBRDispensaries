@@ -35,6 +35,10 @@ function getDatabaseUrl() {
   return url && url.length > 0 ? url : null;
 }
 
+export function hasDurableDutchieSnapshotStorage() {
+  return !isVercelRuntime() || Boolean(getDatabaseUrl());
+}
+
 function getSqlClient() {
   const databaseUrl = getDatabaseUrl();
 
