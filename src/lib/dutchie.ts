@@ -206,6 +206,11 @@ function getBaseUrl() {
   return (process.env.DUTCHIE_API_BASE || DEFAULT_BASE_URL).replace(/\/$/, "");
 }
 
+function getRequestTimeoutMs() {
+  const configured = Number(process.env.DUTCHIE_REQUEST_TIMEOUT_MS);
+  return Number.isFinite(configured) && configured >= 5_000 ? configured : 25_000;
+}
+
 function getBasicAuthHeader(apiKey: string) {
   return `Basic ${Buffer.from(`${apiKey}:`, "utf8").toString("base64")}`;
 }
@@ -811,6 +816,7 @@ export function createDutchieClient(apiKey: string) {
   async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const response = await fetch(`${getBaseUrl()}${path}`, {
       ...init,
+      signal: init.signal ?? AbortSignal.timeout(getRequestTimeoutMs()),
       headers: {
         Authorization: getBasicAuthHeader(apiKey),
         Accept: "application/json",

@@ -142,15 +142,29 @@ export function getDutchieSyncWindow(now = new Date()): DutchieSyncWindow {
   return { from, to };
 }
 
+function getDutchieSyncConcurrency(stores: DutchieStoreConfig[]) {
+  const configured = Number(process.env.DUTCHIE_SYNC_CONCURRENCY);
+  const concurrency = Number.isFinite(configured) && configured > 0 ? Math.floor(configured) : 2;
+  return Math.max(1, Math.min(concurrency, stores.length));
+}
+
 export async function buildDutchieSyncSnapshot(
   stores: DutchieStoreConfig[] = getDutchieStoreConfigs(),
   window: DutchieSyncWindow = getDutchieSyncWindow()
 ): Promise<DutchieSyncSnapshot> {
-  const results: DutchieSyncResult[] = [];
+  const results = new Array<DutchieSyncResult>(stores.length);
+  const concurrency = getDutchieSyncConcurrency(stores);
+  let nextIndex = 0;
 
-  for (const store of stores) {
-    results.push(await syncDutchieStore(store, window));
+  async function worker() {
+    while (nextIndex < stores.length) {
+      const index = nextIndex;
+      nextIndex += 1;
+      results[index] = await syncDutchieStore(stores[index], window);
+    }
   }
+
+  await Promise.all(Array.from({ length: concurrency }, () => worker()));
 
   return {
     ok: results.every((result) => result.verified && result.errors.length === 0),
