@@ -842,17 +842,50 @@ export function createDutchieClient(apiKey: string) {
   };
 }
 
-async function getDutchieStoreAnalytics(client: ReturnType<typeof createDutchieClient>) {
+function dutchieErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Unknown Dutchie request failure";
+}
+
+async function requiredDutchiePull<T>(label: string, pull: () => Promise<T>) {
+  try {
+    return await pull();
+  } catch (error) {
+    throw new Error(`${label}: ${dutchieErrorMessage(error)}`);
+  }
+}
+
+async function optionalDutchiePull<T>(label: string, pull: () => Promise<T>, fallback: T, errors: string[]) {
+  try {
+    return await pull();
+  } catch (error) {
+    errors.push(`${label}: ${dutchieErrorMessage(error)}`);
+    return fallback;
+  }
+}
+
+async function getDutchieStoreAnalytics(client: ReturnType<typeof createDutchieClient>, errors: string[]) {
   const windows = getAnalyticsWindows();
-  const [weeklyCurrent, weeklyPrevious, monthlyCurrent, monthlyPrevious, transactions, products, inventory] = await Promise.all([
-    client.closingReport(windows.weekly),
-    client.closingReport(windows.previousWeekly),
-    client.closingReport(windows.monthly),
-    client.closingReport(windows.previousMonthly),
-    client.transactions(windows.transactionRollup),
-    client.allProducts(),
-    client.inventoryReport(windows.transactionRollup)
-  ]);
+  const weeklyCurrent = await requiredDutchiePull("weekly closing report", () => client.closingReport(windows.weekly));
+  const weeklyPrevious = await requiredDutchiePull("prior weekly closing report", () =>
+    client.closingReport(windows.previousWeekly)
+  );
+  const monthlyCurrent = await requiredDutchiePull("monthly closing report", () => client.closingReport(windows.monthly));
+  const monthlyPrevious = await requiredDutchiePull("prior monthly closing report", () =>
+    client.closingReport(windows.previousMonthly)
+  );
+  const transactions = await optionalDutchiePull(
+    "transaction detail rollup",
+    () => client.transactions(windows.transactionRollup),
+    [] as DutchieTransaction[],
+    errors
+  );
+  const products = await optionalDutchiePull("product catalog", () => client.allProducts(), [] as unknown[], errors);
+  const inventory = await optionalDutchiePull(
+    "inventory analytics",
+    () => client.inventoryReport(windows.transactionRollup),
+    [] as unknown[],
+    errors
+  );
   const inventorySummaries = buildInventorySummaries(inventory);
   const rollups = buildTransactionRollups(
     Array.isArray(transactions) ? transactions : [],
@@ -903,7 +936,7 @@ export async function syncDutchieStore(
     await client.whoami();
     result.verified = true;
   } catch (error) {
-    result.errors.push(error instanceof Error ? error.message : "Failed /whoami request");
+    result.errors.push(`whoami: ${dutchieErrorMessage(error)}`);
     return result;
   }
 
@@ -917,14 +950,14 @@ export async function syncDutchieStore(
     try {
       result[field] = countPayloadItems(await pull());
     } catch (error) {
-      result.errors.push(error instanceof Error ? error.message : `Failed ${field}`);
+      result.errors.push(`${field}: ${dutchieErrorMessage(error)}`);
     }
   }
 
   try {
-    result.analytics = await getDutchieStoreAnalytics(client);
+    result.analytics = await getDutchieStoreAnalytics(client, result.errors);
   } catch (error) {
-    result.errors.push(error instanceof Error ? error.message : "Failed Dutchie financial analytics");
+    result.errors.push(`financial analytics: ${dutchieErrorMessage(error)}`);
   }
 
   return result;

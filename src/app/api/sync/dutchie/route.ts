@@ -71,7 +71,7 @@ function getSyncAccess(request: Request) {
 }
 
 function summarizeSnapshot(snapshot: DutchieSyncSnapshot) {
-  const connectedStores = snapshot.results.filter((result) => result.verified && result.errors.length === 0).length;
+  const connectedStores = snapshot.results.filter((result) => result.verified && result.analytics).length;
   const storeErrors = snapshot.results
     .filter((result) => result.errors.length > 0)
     .map((result) => ({
