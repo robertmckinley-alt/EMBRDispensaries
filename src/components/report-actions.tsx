@@ -21,7 +21,7 @@ export function ReportActions() {
   const [syncMessage, setSyncMessage] = useState("");
 
   async function handleManualSync() {
-    const token = window.prompt("Enter the dashboard sync token.");
+    const token = window.prompt("Enter the manual sync password. This is the CRON_SECRET value from Vercel.");
 
     if (!token?.trim()) {
       return;
@@ -53,7 +53,12 @@ export function ReportActions() {
       router.refresh();
     } catch (error) {
       setSyncState("error");
-      setSyncMessage(error instanceof Error ? error.message : "Sync failed.");
+      const message = error instanceof Error ? error.message : "Sync failed.";
+      setSyncMessage(
+        message.includes("CRON_SECRET")
+          ? `${message} The manual sync button uses CRON_SECRET, not the database URL.`
+          : message
+      );
     }
   }
 
