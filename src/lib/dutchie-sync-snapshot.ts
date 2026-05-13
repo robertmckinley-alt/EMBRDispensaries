@@ -144,7 +144,7 @@ export function getDutchieSyncWindow(now = new Date()): DutchieSyncWindow {
 
 function getDutchieSyncConcurrency(stores: DutchieStoreConfig[]) {
   const configured = Number(process.env.DUTCHIE_SYNC_CONCURRENCY);
-  const concurrency = Number.isFinite(configured) && configured > 0 ? Math.floor(configured) : 2;
+  const concurrency = Number.isFinite(configured) && configured > 0 ? Math.floor(configured) : 1;
   return Math.max(1, Math.min(concurrency, stores.length));
 }
 
