@@ -177,8 +177,51 @@ export async function buildDutchieSyncSnapshot(
   };
 }
 
+function preserveDetailRows(snapshot: DutchieSyncSnapshot, previousSnapshot: DutchieSyncSnapshot | null) {
+  if (!previousSnapshot) {
+    return snapshot;
+  }
+
+  return {
+    ...snapshot,
+    results: snapshot.results.map((result) => {
+      const previous = previousSnapshot.results.find((candidate) => candidate.storeId === result.storeId);
+
+      if (!result.analytics || !previous?.analytics) {
+        return result;
+      }
+
+      return {
+        ...result,
+        productsFetched: result.productsFetched ?? previous.productsFetched,
+        inventoryFetched: result.inventoryFetched ?? previous.inventoryFetched,
+        registerTransactionsFetched: result.registerTransactionsFetched ?? previous.registerTransactionsFetched,
+        analytics: {
+          ...result.analytics,
+          dailyNetSales:
+            result.analytics.dailyNetSales.length > 0 ? result.analytics.dailyNetSales : previous.analytics.dailyNetSales,
+          weeklyBudtenders:
+            result.analytics.weeklyBudtenders.length > 0
+              ? result.analytics.weeklyBudtenders
+              : previous.analytics.weeklyBudtenders,
+          monthlyBudtenders:
+            result.analytics.monthlyBudtenders.length > 0
+              ? result.analytics.monthlyBudtenders
+              : previous.analytics.monthlyBudtenders,
+          weeklyProducts:
+            result.analytics.weeklyProducts.length > 0 ? result.analytics.weeklyProducts : previous.analytics.weeklyProducts,
+          monthlyProducts:
+            result.analytics.monthlyProducts.length > 0 ? result.analytics.monthlyProducts : previous.analytics.monthlyProducts,
+          inventory: result.analytics.inventory.length > 0 ? result.analytics.inventory : previous.analytics.inventory
+        }
+      };
+    })
+  };
+}
+
 export async function refreshDutchieSyncSnapshot(stores: DutchieStoreConfig[] = getDutchieStoreConfigs()) {
-  const snapshot = await buildDutchieSyncSnapshot(stores);
+  const previousSnapshot = await readDutchieSyncSnapshot();
+  const snapshot = preserveDetailRows(await buildDutchieSyncSnapshot(stores), previousSnapshot);
   await saveDutchieSyncSnapshot(snapshot);
   return snapshot;
 }

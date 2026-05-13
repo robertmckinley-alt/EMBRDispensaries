@@ -211,6 +211,16 @@ function getRequestTimeoutMs() {
   return Number.isFinite(configured) && configured >= 5_000 ? configured : 25_000;
 }
 
+function shouldSyncDetailPayloads() {
+  const configured = process.env.DUTCHIE_SYNC_DETAIL_LEVEL?.trim().toLowerCase();
+
+  if (configured) {
+    return configured !== "core";
+  }
+
+  return !process.env.VERCEL;
+}
+
 function getBasicAuthHeader(apiKey: string) {
   return `Basic ${Buffer.from(`${apiKey}:`, "utf8").toString("base64")}`;
 }
@@ -869,7 +879,11 @@ async function optionalDutchiePull<T>(label: string, pull: () => Promise<T>, fal
   }
 }
 
-async function getDutchieStoreAnalytics(client: ReturnType<typeof createDutchieClient>, errors: string[]) {
+async function getDutchieStoreAnalytics(
+  client: ReturnType<typeof createDutchieClient>,
+  errors: string[],
+  includeDetailPayloads: boolean
+) {
   const windows = getAnalyticsWindows();
   const weeklyCurrent = await requiredDutchiePull("weekly closing report", () => client.closingReport(windows.weekly));
   const weeklyPrevious = await requiredDutchiePull("prior weekly closing report", () =>
@@ -879,19 +893,20 @@ async function getDutchieStoreAnalytics(client: ReturnType<typeof createDutchieC
   const monthlyPrevious = await requiredDutchiePull("prior monthly closing report", () =>
     client.closingReport(windows.previousMonthly)
   );
-  const transactions = await optionalDutchiePull(
-    "transaction detail rollup",
-    () => client.transactions(windows.transactionRollup),
-    [] as DutchieTransaction[],
-    errors
-  );
-  const products = await optionalDutchiePull("product catalog", () => client.allProducts(), [] as unknown[], errors);
-  const inventory = await optionalDutchiePull(
-    "inventory analytics",
-    () => client.inventoryReport(windows.transactionRollup),
-    [] as unknown[],
-    errors
-  );
+  const transactions = includeDetailPayloads
+    ? await optionalDutchiePull(
+        "transaction detail rollup",
+        () => client.transactions(windows.transactionRollup),
+        [] as DutchieTransaction[],
+        errors
+      )
+    : [];
+  const products = includeDetailPayloads
+    ? await optionalDutchiePull("product catalog", () => client.allProducts(), [] as unknown[], errors)
+    : [];
+  const inventory = includeDetailPayloads
+    ? await optionalDutchiePull("inventory analytics", () => client.inventoryReport(windows.transactionRollup), [] as unknown[], errors)
+    : [];
   const inventorySummaries = buildInventorySummaries(inventory);
   const rollups = buildTransactionRollups(
     Array.isArray(transactions) ? transactions : [],
@@ -952,16 +967,18 @@ export async function syncDutchieStore(
     ["registerTransactionsFetched", () => client.registerTransactions(window)]
   ] as const;
 
-  for (const [field, pull] of pulls) {
-    try {
-      result[field] = countPayloadItems(await pull());
-    } catch (error) {
-      result.errors.push(`${field}: ${dutchieErrorMessage(error)}`);
+  if (shouldSyncDetailPayloads()) {
+    for (const [field, pull] of pulls) {
+      try {
+        result[field] = countPayloadItems(await pull());
+      } catch (error) {
+        result.errors.push(`${field}: ${dutchieErrorMessage(error)}`);
+      }
     }
   }
 
   try {
-    result.analytics = await getDutchieStoreAnalytics(client, result.errors);
+    result.analytics = await getDutchieStoreAnalytics(client, result.errors, shouldSyncDetailPayloads());
   } catch (error) {
     result.errors.push(`financial analytics: ${dutchieErrorMessage(error)}`);
   }
